@@ -73,13 +73,13 @@ export default function ProductCard({ product }: { product: Product }) {
           {/* Specs */}
           {specs.length > 0 && (
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-              {specs.map(([, val]) => (
-                <span key={String(val)} style={{
+              {specs.map(([key, val]) => (
+                <span key={key} style={{
                   fontSize: 9, fontFamily: "var(--font-mono)", fontWeight: 500,
                   padding: "2px 6px", borderRadius: 4,
                   background: "var(--bg-elevated)", color: "var(--text-3)",
                   border: "1px solid var(--border-solid)",
-                }}>{String(val)}</span>
+                }}>{key}: {String(val)}</span>
               ))}
             </div>
           )}
@@ -92,9 +92,15 @@ export default function ProductCard({ product }: { product: Product }) {
               </div>
             )}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <span className="price-tag" style={{ fontSize: 20 }}>
-                ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
-              </span>
+              {product.precio > 0 ? (
+                <span className="price-tag" style={{ fontSize: 20 }}>
+                  ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
+                </span>
+              ) : (
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-3)", fontStyle: "italic" }}>
+                  Consultar precio
+                </span>
+              )}
             </div>
 
             {/* Add to cart button — full width */}

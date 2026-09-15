@@ -1,8 +1,8 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { ShoppingCart, ArrowLeft, MessageCircle, CheckCircle, Package } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { ShoppingCart, ArrowLeft, MessageCircle, CheckCircle, Package, X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart-store";
 
@@ -16,8 +16,9 @@ const PLACEHOLDER = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 
 export default function ProductDetailClient({ product }: { product: Product }) {
   const { addItem } = useCart();
-  const [added, setAdded]   = useState(false);
+  const [added, setAdded]       = useState(false);
   const [activeImg, setActiveImg] = useState(0);
+  const [lightbox, setLightbox]  = useState(false);
 
   const images    = product.fotos_tienda?.length > 0 ? product.fotos_tienda : [PLACEHOLDER];
   const condition = CONDITION_LABELS[product.condicion] ?? CONDITION_LABELS.segunda;
@@ -30,6 +31,35 @@ export default function ProductDetailClient({ product }: { product: Product }) {
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
+
+  const [slideDir, setSlideDir] = useState<"left" | "right" | null>(null);
+  const [imgKey,   setImgKey]   = useState(0);
+
+  const openLightbox  = () => { if (!images[activeImg].startsWith("data:")) setLightbox(true); };
+  const closeLightbox = useCallback(() => setLightbox(false), []);
+
+  const prevImg = useCallback(() => {
+    setSlideDir("right");
+    setImgKey(k => k + 1);
+    setActiveImg(i => (i - 1 + images.length) % images.length);
+  }, [images.length]);
+
+  const nextImg = useCallback(() => {
+    setSlideDir("left");
+    setImgKey(k => k + 1);
+    setActiveImg(i => (i + 1) % images.length);
+  }, [images.length]);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape")     closeLightbox();
+      if (e.key === "ArrowLeft")  prevImg();
+      if (e.key === "ArrowRight") nextImg();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightbox, closeLightbox, prevImg, nextImg]);
 
   const waMsg = encodeURIComponent(
     `Hola ByteX Store! 👋\nMe interesa este equipo:\n*${product.nombre}*\nPrecio: $${product.precio}\n\n¿Está disponible?`
@@ -59,12 +89,16 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
         {/* ── Images ── */}
         <div>
-          <div style={{
-            position: "relative", aspectRatio: "4/3", borderRadius: 12, overflow: "hidden",
-            background: "var(--bg-elevated)", border: "1px solid var(--border-solid)", marginBottom: 10,
-          }}>
+          <div
+            onClick={openLightbox}
+            style={{
+              position: "relative", aspectRatio: "4/3", borderRadius: 12, overflow: "hidden",
+              background: "var(--bg-elevated)", border: "1px solid var(--border-solid)", marginBottom: 10,
+              cursor: images[activeImg].startsWith("data:") ? "default" : "zoom-in",
+            }}
+          >
             <Image src={images[activeImg]} alt={product.nombre} fill priority
-              style={{ objectFit: "cover" }}
+              style={{ objectFit: "cover", transition: "transform 0.3s ease" }}
               unoptimized={images[activeImg].startsWith("data:")}
               sizes="(max-width: 768px) 100vw, 50vw"
             />
@@ -110,9 +144,15 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
           {/* Price */}
           <div style={{ margin: "20px 0" }}>
-            <span className="price-tag" style={{ fontSize: 38 }}>
-              ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
-            </span>
+            {product.precio > 0 ? (
+              <span className="price-tag" style={{ fontSize: 38 }}>
+                ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
+              </span>
+            ) : (
+              <span style={{ fontSize: 24, fontWeight: 700, color: "var(--text-3)", fontStyle: "italic" }}>
+                Consultar precio
+              </span>
+            )}
             {isAvailable && product.stock <= 3 && (
               <div style={{ fontSize: 12, color: "var(--warning)", display: "flex",
                 alignItems: "center", gap: 5, marginTop: 6 }}>
@@ -188,10 +228,157 @@ export default function ProductDetailClient({ product }: { product: Product }) {
         </div>
       </div>
 
+      {/* ── Lightbox ── */}
+      {lightbox && (
+        <div
+          onClick={closeLightbox}
+          className="lb-backdrop"
+          style={{
+            position: "fixed", inset: 0, zIndex: 1000,
+            background: "rgba(5,7,18,0.93)",
+            backdropFilter: "blur(12px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          {/* Imagen con slide direccional */}
+          <div
+            key={imgKey}
+            onClick={e => e.stopPropagation()}
+            className={`lb-img-wrap ${slideDir === "left" ? "slide-from-right" : slideDir === "right" ? "slide-from-left" : "lb-enter"}`}
+            style={{
+              position: "relative", maxWidth: "90vw", maxHeight: "88vh",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={images[activeImg]}
+              alt={product.nombre}
+              style={{
+                display: "block", maxWidth: "90vw", maxHeight: "88vh",
+                objectFit: "contain", borderRadius: 12,
+                boxShadow: "0 32px 80px rgba(0,0,0,0.7)",
+              }}
+            />
+          </div>
+
+          {/* Cerrar */}
+          <button
+            onClick={closeLightbox}
+            className="lb-btn lb-close"
+            style={{
+              position: "fixed", top: 18, right: 18,
+              width: 40, height: 40, borderRadius: "50%",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", color: "#fff",
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <X size={17} />
+          </button>
+
+          {/* Prev / Next */}
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={e => { e.stopPropagation(); prevImg(); }}
+                className="lb-btn lb-nav"
+                style={{
+                  position: "fixed", left: 16, top: "50%", transform: "translateY(-50%)",
+                  width: 48, height: 48, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", color: "#fff",
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button
+                onClick={e => { e.stopPropagation(); nextImg(); }}
+                className="lb-btn lb-nav"
+                style={{
+                  position: "fixed", right: 16, top: "50%", transform: "translateY(-50%)",
+                  width: 48, height: 48, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", color: "#fff",
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                <ChevronRight size={24} />
+              </button>
+
+              {/* Dots */}
+              <div style={{
+                position: "fixed", bottom: 22, left: "50%", transform: "translateX(-50%)",
+                display: "flex", gap: 7, alignItems: "center",
+              }}>
+                {images.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={e => {
+                      e.stopPropagation();
+                      setSlideDir(i > activeImg ? "left" : "right");
+                      setImgKey(k => k + 1);
+                      setActiveImg(i);
+                    }}
+                    style={{
+                      width: i === activeImg ? 22 : 8, height: 8, borderRadius: 4,
+                      background: i === activeImg ? "var(--accent)" : "rgba(255,255,255,0.25)",
+                      border: "none", cursor: "pointer", padding: 0,
+                      transition: "all 0.25s cubic-bezier(.4,0,.2,1)",
+                      boxShadow: i === activeImg ? "0 0 8px var(--accent)" : "none",
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       <style>{`
         @media (max-width: 768px) {
           .product-detail-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
         }
+
+        /* ── Lightbox animations ── */
+        @keyframes lb-backdrop-in {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes lb-scale-in {
+          from { opacity: 0; transform: scale(0.88); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes slide-from-right {
+          from { opacity: 0; transform: translateX(60px) scale(0.96); }
+          to   { opacity: 1; transform: translateX(0)    scale(1); }
+        }
+        @keyframes slide-from-left {
+          from { opacity: 0; transform: translateX(-60px) scale(0.96); }
+          to   { opacity: 1; transform: translateX(0)     scale(1); }
+        }
+
+        .lb-backdrop { animation: lb-backdrop-in 0.22s ease; }
+        .lb-enter    { animation: lb-scale-in      0.28s cubic-bezier(.2,.8,.3,1) both; }
+        .slide-from-right { animation: slide-from-right 0.28s cubic-bezier(.2,.8,.3,1) both; }
+        .slide-from-left  { animation: slide-from-left  0.28s cubic-bezier(.2,.8,.3,1) both; }
+
+        .lb-btn {
+          transition: background 0.18s, border-color 0.18s, transform 0.18s;
+        }
+        .lb-btn:hover {
+          background: rgba(255,255,255,0.18) !important;
+          border-color: rgba(255,255,255,0.35) !important;
+          transform: scale(1.08);
+        }
+        .lb-nav:hover { transform: translateY(-50%) scale(1.08) !important; }
       `}</style>
     </div>
   );
