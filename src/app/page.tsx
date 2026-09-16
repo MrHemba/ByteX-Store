@@ -26,11 +26,12 @@ const CATS = [
 ];
 
 const CAT_CARDS = [
-  { id:"laptop",    label:"Laptops",         desc:"Portátiles empresariales y personales",  icon:"💻", color:"#0066FF" },
-  { id:"pc",        label:"PCs Escritorio",  desc:"Equipos de escritorio y all-in-one",     icon:"🖥️", color:"#7C3AED" },
-  { id:"impresora", label:"Impresoras",      desc:"Láser, tinta y multifuncionales",        icon:"🖨️", color:"#059669" },
-  { id:"monitor",   label:"Monitores",       desc:"Pantallas Full HD e IPS de calidad",     icon:"🖵",  color:"#00C8FF" },
-  { id:"accesorio", label:"Accesorios",      desc:"Teclados, ratones, cables y más",        icon:"🖱️", color:"#F59E0B" },
+  { id:"laptop",    label:"Laptops",            desc:"Portátiles empresariales y personales",  icon:"💻", color:"#0066FF" },
+  { id:"pc",        label:"PCs Escritorio",     desc:"Equipos de escritorio y all-in-one",     icon:"🖥️", color:"#7C3AED" },
+  { id:"impresora", label:"Impresoras",         desc:"Láser, tinta y multifuncionales",        icon:"🖨️", color:"#059669" },
+  { id:"monitor",   label:"Monitores",          desc:"Pantallas Full HD e IPS de calidad",     icon:"🖵",  color:"#00C8FF" },
+  { id:"accesorio", label:"Accesorios",         desc:"Teclados, ratones, cables y más",        icon:"🖱️", color:"#F59E0B" },
+  { id:"servicio",  label:"Servicios Digitales",desc:"Software, licencias y soporte técnico",  icon:"⚡", color:"#EC4899" },
 ];
 
 export default async function Home() {
@@ -119,7 +120,7 @@ export default async function Home() {
           </div>
 
           {/* Cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14 }} className="cat-grid">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 14 }} className="cat-grid">
             {CAT_CARDS.map(cat => (
               <Link key={cat.id} href={`/catalogo?cat=${cat.id}`} style={{ textDecoration: "none" }}>
                 <div style={{

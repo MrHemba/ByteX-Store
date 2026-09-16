@@ -1,22 +1,19 @@
 "use client";
-import { X, Trash2, ShoppingCart, Plus, Minus, MessageCircle } from "lucide-react";
+import { X, Trash2, ShoppingCart, Plus, Minus, Send } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-store";
+import { useState, useEffect } from "react";
 
 const BLANK = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect fill='%231A2035' width='60' height='60'/%3E%3C/svg%3E`;
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, total, itemCount } = useCart();
-  const count = itemCount();
-  const totalVal = total();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const count    = mounted ? itemCount() : 0;
+  const totalVal = mounted ? total()     : 0;
 
-  const handleWhatsApp = () => {
-    const num = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
-    const lines = items.map(i => `• ${i.product.nombre} ×${i.quantity} — $${(i.product.precio * i.quantity).toFixed(2)}`).join("\n");
-    const msg = `Hola ByteX Store! 👋\n\nMe interesan estos equipos:\n${lines}\n\n💰 Total referencial: $${totalVal.toFixed(2)}\n\n¿Me pueden dar más información?`;
-    window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
-  };
 
   return (
     <>
@@ -131,11 +128,10 @@ export default function CartDrawer() {
             <p style={{ fontSize: 11, color: "var(--text-4)", lineHeight: 1.5 }}>
               Precios referenciales. Los descuentos se coordinan contigo.
             </p>
-            <button onClick={handleWhatsApp} className="btn-primary" style={{ width: "100%" }}>
-              <MessageCircle size={15} /> Consultar por WhatsApp
-            </button>
-            <Link href="/carrito" onClick={closeCart} style={{ textDecoration: "none" }}>
-              <button className="btn-ghost" style={{ width: "100%" }}>Ver resumen completo</button>
+            <Link href="/carrito" onClick={closeCart} style={{ textDecoration: "none", display: "block" }}>
+              <button className="btn-primary" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <Send size={14} /> Solicitar cotización
+              </button>
             </Link>
           </div>
         )}

@@ -18,8 +18,13 @@ export default function Navbar() {
   const [scrolled, setScrolled]     = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [search, setSearch]         = useState("");
+  const [mounted, setMounted]       = useState(false);
   const { itemCount, openCart }     = useCart();
-  const count = itemCount();
+
+  // Esperar a que el cliente monte antes de leer el carrito (evita hydration mismatch)
+  useEffect(() => { setMounted(true); }, []);
+
+  const count = mounted ? itemCount() : 0;
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 10);

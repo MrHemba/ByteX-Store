@@ -28,7 +28,7 @@ export default function CarritoPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await createCotizacion({
+      const result = await createCotizacion({
         cliente_nombre:    form.nombre,
         cliente_whatsapp:  form.whatsapp,
         cliente_email:     form.email,
@@ -44,7 +44,11 @@ export default function CarritoPage() {
           subtotal:        i.product.precio * i.quantity,
         })),
       });
-    } catch { /* continue anyway */ }
+      if (!result) console.error('[ByteX] createCotizacion devolvió null — revisar RLS o columnas de la tabla');
+      else console.log('[ByteX] Cotización guardada, id:', result.id);
+    } catch (err) {
+      console.error('[ByteX] Error al guardar cotización:', err);
+    }
     finally {
       const msg = generateWhatsAppMsg();
       const num = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
@@ -179,17 +183,9 @@ export default function CarritoPage() {
                       Precios referenciales. Los descuentos se coordinan con nosotros.
                     </p>
                     <button className="btn-primary" onClick={() => setStep("form")}
-                      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-                        gap: 8, marginBottom: 8 }}>
+                      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                       <Send size={14} /> Solicitar cotización
                     </button>
-                    <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(generateWhatsAppMsg())}`}
-                      target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "block" }}>
-                      <button className="btn-ghost" style={{ width: "100%", display: "flex",
-                        alignItems: "center", justifyContent: "center", gap: 8 }}>
-                        <MessageCircle size={14} /> WhatsApp directo
-                      </button>
-                    </a>
                   </div>
                 </div>
               )}

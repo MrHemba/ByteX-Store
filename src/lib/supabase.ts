@@ -173,7 +173,10 @@ export async function createCotizacion(payload: {
     .select()
     .single();
 
-  if (error || !cotizacion) return null;
+  if (error || !cotizacion) {
+    console.error('[ByteX] Error insertando cotizacion_web:', error?.message, error?.code, error?.details);
+    return null;
+  }
 
   const detalles = payload.items.map((item) => ({
     cotizacion_id:   cotizacion.id,
