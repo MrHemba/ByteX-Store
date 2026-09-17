@@ -9,6 +9,7 @@ export interface Product {
   categoria: string;
   stock: number;
   codigo: string | null;
+  es_servicio: boolean;
 }
 
 export interface CartItem {

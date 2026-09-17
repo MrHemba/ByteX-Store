@@ -6,10 +6,22 @@ export const metadata: Metadata = {
   description:
     "Laptops, PCs, impresoras y accesorios de segunda mano revisados. Equipos tecnológicos de calidad en Ecuador.",
   keywords: "laptops segunda mano ecuador, computadoras usadas, impresoras, equipos tecnologicos quito",
+  icons: {
+    icon:     "/logo.png",
+    shortcut: "/logo.png",
+    apple:    "/logo.png",
+  },
   openGraph: {
-    title: "ByteX Store",
+    title:       "ByteX Store — Tecnología que transforma",
+    description: "Laptops, PCs e impresoras de segunda mano revisados por expertos. H&G Solutions Ecuador.",
+    type:        "website",
+    images: [{ url: "/logo-principal.jpg", width: 1536, height: 836, alt: "ByteX Store" }],
+  },
+  twitter: {
+    card:        "summary_large_image",
+    title:       "ByteX Store",
     description: "Tecnología que transforma",
-    type: "website",
+    images:      ["/logo-principal.jpg"],
   },
 };
 

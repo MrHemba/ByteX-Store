@@ -22,7 +22,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
   const images    = product.fotos_tienda?.length > 0 ? product.fotos_tienda : [PLACEHOLDER];
   const condition = CONDITION_LABELS[product.condicion] ?? CONDITION_LABELS.segunda;
-  const isAvailable = product.stock > 0;
+  const isAvailable = product.es_servicio || product.stock > 0;
   const specs     = Object.entries(product.especificaciones || {});
 
   const handleAdd = () => {
@@ -153,7 +153,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                 Consultar precio
               </span>
             )}
-            {isAvailable && product.stock <= 3 && (
+            {!product.es_servicio && isAvailable && product.stock <= 3 && (
               <div style={{ fontSize: 12, color: "var(--warning)", display: "flex",
                 alignItems: "center", gap: 5, marginTop: 6 }}>
                 <Package size={12} />
@@ -169,9 +169,26 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
           {/* Description */}
           {product.descripcion_publica && (
-            <p style={{ fontSize: 14, color: "var(--text-3)", lineHeight: 1.8, marginBottom: 24 }}>
-              {product.descripcion_publica}
-            </p>
+            <div style={{ marginBottom: 28 }}>
+              <div style={{ fontSize: 10, color: "var(--accent)", fontFamily: "var(--font-mono)",
+                letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                Descripción
+              </div>
+              <div style={{
+                padding: "14px 16px", borderRadius: 10,
+                background: "var(--bg-elevated)", border: "1px solid var(--border-solid)",
+                display: "flex", flexDirection: "column", gap: 8,
+              }}>
+                {product.descripcion_publica.split(/\n+/).filter(Boolean).map((parr, i) => (
+                  <p key={i} style={{
+                    fontSize: 14, color: "var(--text-2)", lineHeight: 1.75,
+                    margin: 0,
+                  }}>
+                    {parr}
+                  </p>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Specs */}
@@ -205,7 +222,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
               {added ? (
                 <><CheckCircle size={16} /> Agregado a cotización</>
               ) : (
-                <><ShoppingCart size={16} /> {isAvailable ? "Agregar a cotización" : "Sin stock"}</>
+                <><ShoppingCart size={16} /> {isAvailable ? "Agregar a cotización" : "Agotado"}</>
               )}
             </button>
 

@@ -77,7 +77,10 @@ export default function CarritoPage() {
           {/* ── SUCCESS ── */}
           {step === "success" && (
             <div style={{ textAlign: "center", padding: "60px 24px" }}>
-              <CheckCircle size={56} style={{ color: "var(--success)", marginBottom: 20 }} />
+              <div style={{ position: "relative", width: 200, height: 56, margin: "0 auto 28px" }}>
+                <Image src="/logo.png" alt="ByteX Store" fill style={{ objectFit: "contain" }} />
+              </div>
+              <CheckCircle size={48} style={{ color: "var(--success)", marginBottom: 16 }} />
               <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 10 }}>¡Gracias!</h2>
               <p style={{ fontSize: 14, color: "var(--text-3)", marginBottom: 28, lineHeight: 1.7 }}>
                 Se abrió WhatsApp con tu cotización lista. Si no se abrió automáticamente, puedes escribirnos directamente.

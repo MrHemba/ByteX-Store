@@ -23,7 +23,7 @@ export async function getProducts(categoria?: string): Promise<Product[]> {
     .select(`
       id, nombre, descripcion_publica,
       precio_unitario, fotos_tienda, condicion,
-      especificaciones, categoria, codigo_principal, stock
+      especificaciones, categoria, codigo_principal, stock, es_servicio
     `)
     .eq('visible_tienda', true)
     .eq('active', true)
@@ -63,6 +63,7 @@ export async function getProducts(categoria?: string): Promise<Product[]> {
     categoria:           p.categoria                 || '',
     codigo:              p.codigo_principal,
     stock:               p.stock                     ?? 0,
+    es_servicio:         p.es_servicio               ?? false,
   }));
 
   const equipMapped: Product[] = (equips || []).map((e: any) => ({
@@ -76,6 +77,7 @@ export async function getProducts(categoria?: string): Promise<Product[]> {
     categoria:           e.categoria     || '',
     codigo:              null,
     stock:               1,
+    es_servicio:         false,
   }));
 
   return [...prodMapped, ...equipMapped];
@@ -118,7 +120,7 @@ export async function getProductBySlug(id: string): Promise<Product | null> {
     .select(`
       id, nombre, descripcion_publica,
       precio_unitario, fotos_tienda, condicion,
-      especificaciones, categoria, codigo_principal, stock
+      especificaciones, categoria, codigo_principal, stock, es_servicio
     `)
     .eq('id', id)
     .eq('visible_tienda', true)
@@ -140,6 +142,7 @@ export async function getProductBySlug(id: string): Promise<Product | null> {
     categoria:           data.categoria                 || '',
     codigo:              data.codigo_principal,
     stock:               data.stock                     ?? 0,
+    es_servicio:         data.es_servicio               ?? false,
   } as Product;
 }
 

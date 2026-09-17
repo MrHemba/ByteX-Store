@@ -19,7 +19,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const [added, setAdded] = useState(false);
   const cond = CONDITIONS[product.condicion] ?? CONDITIONS.segunda;
   const imgSrc = product.fotos_tienda?.[0] || PLACEHOLDER;
-  const available = product.stock > 0;
+  const available = product.es_servicio || product.stock > 0;
   const specs = Object.entries(product.especificaciones || {}).slice(0, 3);
 
   function handleAdd(e: React.MouseEvent) {
@@ -86,7 +86,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
           {/* Price */}
           <div style={{ marginTop: "auto", paddingTop: 10 }}>
-            {available && product.stock <= 2 && (
+            {!product.es_servicio && available && product.stock <= 2 && (
               <div style={{ fontSize: 10, color: "var(--warning)", marginBottom: 4, fontWeight: 500 }}>
                 ¡Último disponible!
               </div>
