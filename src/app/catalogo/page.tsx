@@ -1,4 +1,3 @@
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { getProducts } from "@/lib/supabase";
@@ -40,7 +39,6 @@ export default async function CatalogoPage({
 
   return (
     <>
-      <Navbar />
       <main style={{ paddingTop: 72, minHeight: "100vh" }}>
 
         {/* Header */}

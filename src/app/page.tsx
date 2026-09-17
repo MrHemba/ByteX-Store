@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import CategoryPills from "@/components/CategoryPills";
@@ -41,7 +40,6 @@ export default async function Home() {
 
   return (
     <>
-      <Navbar />
       <main style={{ paddingTop: 80 }}>
 
         {/* ── HERO ── */}

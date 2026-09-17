@@ -1,11 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
 
 export default function NotFound() {
   return (
     <>
-      <Navbar />
       <main style={{ paddingTop: 72, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", padding: "80px 24px" }}>
           <div style={{ position: "relative", width: 220, height: 64, margin: "0 auto 32px" }}>

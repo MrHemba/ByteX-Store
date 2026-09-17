@@ -1,4 +1,3 @@
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getProductBySlug } from "@/lib/supabase";
 import { notFound } from "next/navigation";
@@ -16,7 +15,6 @@ export default async function ProductPage({
 
   return (
     <>
-      <Navbar />
       <main style={{ paddingTop: 72, minHeight: "100vh" }}>
         <ProductDetailClient product={product} />
       </main>

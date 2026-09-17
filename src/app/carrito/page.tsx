@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/lib/cart-store";
 import { createCotizacion } from "@/lib/supabase";
@@ -61,7 +60,6 @@ export default function CarritoPage() {
 
   return (
     <>
-      <Navbar />
       <main style={{ paddingTop: 72, minHeight: "100vh" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "40px 24px 80px" }}>
 
