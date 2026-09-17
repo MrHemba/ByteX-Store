@@ -47,11 +47,23 @@ export default function Footer() {
           </div>
         </div>
         <div style={{ paddingTop: 24, borderTop: "1px solid var(--border-solid)",
-          display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+          display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <span style={{ fontSize: 12, color: "var(--text-4)" }}>© {year} ByteX Store · H&G Solutions</span>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--success)", boxShadow: "0 0 6px var(--success)" }} />
-            <span style={{ fontSize: 11, color: "var(--text-4)", fontFamily: "var(--font-mono)" }}>online</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+            <Link href="/privacidad"
+              style={{ fontSize: 12, color: "var(--text-4)", textDecoration: "none", transition: "color 0.15s" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "var(--accent)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--text-4)")}
+            >Política de Privacidad</Link>
+            <Link href="/terminos"
+              style={{ fontSize: 12, color: "var(--text-4)", textDecoration: "none", transition: "color 0.15s" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "var(--accent)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--text-4)")}
+            >Términos y Condiciones</Link>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--success)", boxShadow: "0 0 6px var(--success)" }} />
+              <span style={{ fontSize: 11, color: "var(--text-4)", fontFamily: "var(--font-mono)" }}>online</span>
+            </div>
           </div>
         </div>
       </div>
