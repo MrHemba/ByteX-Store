@@ -49,6 +49,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-N6GJS9VQ');`,
           }}
         />
+        {/* Google Analytics GA4 */}
+        <Script
+          id="ga-script"
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-QRRGT5D3VT"
+        />
+        <Script
+          id="ga-config"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-QRRGT5D3VT');`,
+          }}
+        />
       </head>
       <body>
         {/* Google Tag Manager — noscript fallback en <body> */}
