@@ -39,7 +39,7 @@ export default async function CatalogoPage({
 
   return (
     <>
-      <main style={{ paddingTop: 72, minHeight: "100vh" }}>
+      <main style={{ paddingTop: 100, minHeight: "100vh" }}>
 
         {/* Header */}
         <div style={{ padding: "40px 24px 0", maxWidth: 1280, margin: "0 auto" }}>

@@ -12,7 +12,7 @@ const LAST_UPDATED = "17 de septiembre de 2025";
 export default function TerminosPage() {
   return (
     <>
-      <main style={{ paddingTop: 72, minHeight: "100vh" }}>
+      <main style={{ paddingTop: 100, minHeight: "100vh" }}>
 
         {/* Header */}
         <div style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border-solid)", padding: "48px 24px" }}>

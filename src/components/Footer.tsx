@@ -12,7 +12,7 @@ export default function Footer() {
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 48, marginBottom: 40 }} className="footer-grid">
           <div>
             <div style={{ position: "relative", height: 70, width: 240, marginLeft: -6, marginBottom: 16 }} className="logo-nav">
-              <Image src="/logo.png" alt="ByteX Store" fill style={{ objectFit: "contain", objectPosition: "left center" }} sizes="450px" />
+              <Image src="/logo.png" alt="ByteX Store" fill style={{ objectFit: "contain", objectPosition: "left center" }} sizes="240px" quality={100} />
             </div>
             <p style={{ fontSize: 13, color: "var(--text-3)", lineHeight: 1.7, maxWidth: 280, marginBottom: 20 }}>
               Laptops, PCs e impresoras de segunda mano revisados por expertos. Una tienda de H&G Solutions.

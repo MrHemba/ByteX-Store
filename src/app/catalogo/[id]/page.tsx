@@ -15,7 +15,7 @@ export default async function ProductPage({
 
   return (
     <>
-      <main style={{ paddingTop: 72, minHeight: "100vh" }}>
+      <main style={{ paddingTop: 100, minHeight: "100vh" }}>
         <ProductDetailClient product={product} />
       </main>
       <Footer />

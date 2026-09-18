@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function NotFound() {
   return (
     <>
-      <main style={{ paddingTop: 72, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <main style={{ paddingTop: 100, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", padding: "80px 24px" }}>
           <div style={{ position: "relative", width: 220, height: 64, margin: "0 auto 32px" }}>
             <Image src="/logo.png" alt="ByteX Store" fill style={{ objectFit: "contain" }} priority />

@@ -49,16 +49,16 @@ export default function Navbar() {
         overflow: "visible",
       }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 16px" }}>
-          <div style={{ display: "flex", alignItems: "center", height: 80, gap: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", height: 100, gap: 20 }}>
 
             {/* Logo */}
             <Link href="/" style={{ textDecoration: "none", flexShrink: 0, display: "flex", alignItems: "center" }}>
               <div style={{
-                position: "relative", height: 70, width: 240,
+                position: "relative", height: 180, width: 580,
                 transition: "opacity 0.25s",
               }} className="logo-nav">
                 <Image src="/logo.png" alt="ByteX Store" fill priority
-                  style={{ objectFit: "contain", objectPosition: "left center" }} sizes="160px" />
+                  style={{ objectFit: "contain", objectPosition: "left center" }} sizes="580px" quality={100} />
               </div>
             </Link>
 

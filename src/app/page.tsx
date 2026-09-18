@@ -41,7 +41,7 @@ export default async function Home() {
 
   return (
     <>
-      <main style={{ paddingTop: 80 }}>
+      <main style={{ paddingTop: 100 }}>
 
         {/* ── HERO ── */}
         <section style={{ borderBottom: "1px solid var(--border-solid)", padding: "clamp(40px,6vw,72px) clamp(16px,4vw,24px) clamp(40px,6vw,68px)" }}>
