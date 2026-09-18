@@ -106,6 +106,7 @@ body {
   -webkit-font-smoothing: antialiased;
   font-size: 15px;
   line-height: 1.55;
+  overflow-x: hidden;
 }
 
 h1, h2, h3 { font-family: var(--font-display); }
@@ -268,3 +269,21 @@ h1, h2, h3 { font-family: var(--font-display); }
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) { .hide-mobile { display: none !important; } }
 @media (min-width: 769px) { .show-mobile { display: none !important; } }
+
+@media (max-width: 768px) {
+  /* Hero */
+  .hero-grid   { grid-template-columns: 1fr !important; }
+  .hero-title  { font-size: clamp(32px, 8vw, 48px) !important; }
+
+  /* Categorías */
+  .cat-grid    { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Secciones — padding reducido */
+  section, .section-pad { padding-left: 16px !important; padding-right: 16px !important; }
+
+  /* Footer */
+  .footer-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+
+  /* Navbar logo — no desborda */
+  .logo-nav    { width: 200px !important; height: 60px !important; }
+}

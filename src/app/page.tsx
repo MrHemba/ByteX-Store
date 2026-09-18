@@ -44,8 +44,8 @@ export default async function Home() {
       <main style={{ paddingTop: 80 }}>
 
         {/* ── HERO ── */}
-        <section style={{ borderBottom: "1px solid var(--border-solid)", padding: "72px 24px 68px" }}>
-          <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 420px", gap: 48, alignItems: "center" }} className="hero-grid">
+        <section style={{ borderBottom: "1px solid var(--border-solid)", padding: "clamp(40px,6vw,72px) clamp(16px,4vw,24px) clamp(40px,6vw,68px)" }}>
+          <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 500px", gap: 48, alignItems: "center" }} className="hero-grid">
 
             {/* Texto */}
             <div className="hero-text">
@@ -117,7 +117,7 @@ export default async function Home() {
 
 
         {/* ── CATEGORÍAS DESTACADAS ── */}
-        <section style={{ maxWidth: 1280, margin: "0 auto", padding: "60px 24px 0" }}>
+        <section style={{ maxWidth: 1280, margin: "0 auto", padding: "clamp(36px,5vw,60px) clamp(16px,4vw,24px) 0" }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
             <div>
@@ -191,7 +191,7 @@ export default async function Home() {
         </section>
 
         {/* ── PRODUCTOS ── */}
-        <section style={{ maxWidth: 1280, margin: "0 auto", padding: "40px 24px 80px" }}>
+        <section style={{ maxWidth: 1280, margin: "0 auto", padding: "clamp(28px,4vw,40px) clamp(16px,4vw,24px) clamp(48px,6vw,80px)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
             <h2 style={{ fontSize: 18, fontWeight: 700 }}>Equipos disponibles</h2>
             <Link href="/catalogo" style={{ textDecoration: "none", display: "flex", alignItems: "center",

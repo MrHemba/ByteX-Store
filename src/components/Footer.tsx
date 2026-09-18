@@ -11,7 +11,7 @@ export default function Footer() {
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "48px 24px 32px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 48, marginBottom: 40 }} className="footer-grid">
           <div>
-            <div style={{ position: "relative", height: 130, width: 450, marginLeft: -6, marginBottom: 16 }} className="logo-nav">
+            <div style={{ position: "relative", height: 70, width: 240, marginLeft: -6, marginBottom: 16 }} className="logo-nav">
               <Image src="/logo.png" alt="ByteX Store" fill style={{ objectFit: "contain", objectPosition: "left center" }} sizes="450px" />
             </div>
             <p style={{ fontSize: 13, color: "var(--text-3)", lineHeight: 1.7, maxWidth: 280, marginBottom: 20 }}>

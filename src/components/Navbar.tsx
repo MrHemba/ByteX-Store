@@ -54,7 +54,7 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" style={{ textDecoration: "none", flexShrink: 0, display: "flex", alignItems: "center" }}>
               <div style={{
-                position: "relative", height: 130, width: 450,
+                position: "relative", height: 70, width: 240,
                 transition: "opacity 0.25s",
               }} className="logo-nav">
                 <Image src="/logo.png" alt="ByteX Store" fill priority
