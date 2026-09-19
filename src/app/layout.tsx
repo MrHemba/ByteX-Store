@@ -10,7 +10,10 @@ import Navbar from "@/components/Navbar";
 import NavigationProgress from "@/components/NavigationProgress";
 import PageTransition from "@/components/PageTransition";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bytexstore.es";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: "ByteX Store — Tecnología que transforma | H&G Solutions",
   description:
     "Laptops, PCs, impresoras y accesorios de segunda mano revisados. Equipos tecnológicos de calidad en Ecuador.",
