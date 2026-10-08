@@ -154,13 +154,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ synced: 0, errors: [] }, { headers: CORS_HEADERS });
   }
 
+  // Obtener blocklist para ignorar productos eliminados manualmente
+  const { data: blocklist } = await supabase
+    .from('dropi_blocklist')
+    .select('shopify_id');
+  const blockedIds = new Set((blocklist ?? []).map((r: { shopify_id: number }) => r.shopify_id));
+
+  // Filtrar productos bloqueados
+  const filteredProducts = products.filter(p => !blockedIds.has(p.id));
+
   // Transformar y hacer upsert por lotes de 50
   const errors: string[] = [];
   let synced = 0;
   const BATCH_SIZE = 50;
 
-  for (let i = 0; i < products.length; i += BATCH_SIZE) {
-    const batch = products.slice(i, i + BATCH_SIZE).map(transformProduct);
+  for (let i = 0; i < filteredProducts.length; i += BATCH_SIZE) {
+    const batch = filteredProducts.slice(i, i + BATCH_SIZE).map(transformProduct);
 
     const { error } = await supabase
       .from('productos_dropi')

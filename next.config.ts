@@ -5,11 +5,16 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "mixtsrczbovsyumrofso.supabase.co",
+        hostname: "**.supabase.co",
+      },
+      // Shopify CDN — imágenes de productos Dropi
+      {
+        protocol: "https",
+        hostname: "cdn.shopify.com",
       },
       {
         protocol: "https",
-        hostname: "**.supabase.co",
+        hostname: "**.myshopify.com",
       },
     ],
   },
