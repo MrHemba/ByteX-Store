@@ -101,6 +101,18 @@ function transformProduct(p: ShopifyProduct) {
   };
 }
 
+// ── CORS headers ──────────────────────────────────────────────────────────────
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin':  '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 // ── Handler GET ────────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
@@ -109,7 +121,7 @@ export async function GET(req: NextRequest) {
   const expectedToken = `Bearer ${process.env.SHOPIFY_SYNC_SECRET}`;
 
   if (!process.env.SHOPIFY_SYNC_SECRET || authHeader !== expectedToken) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: CORS_HEADERS });
   }
 
   // Fetch productos desde Shopify (API pública, sin auth)
@@ -123,7 +135,7 @@ export async function GET(req: NextRequest) {
     if (!res.ok) {
       return NextResponse.json(
         { error: `Shopify respondió ${res.status}` },
-        { status: 502 }
+        { status: 502, headers: CORS_HEADERS }
       );
     }
 
@@ -132,14 +144,14 @@ export async function GET(req: NextRequest) {
     console.error('[ByteX/sync] Error fetching Shopify:', err);
     return NextResponse.json(
       { error: 'Error al conectar con Shopify' },
-      { status: 502 }
+      { status: 502, headers: CORS_HEADERS }
     );
   }
 
   const products = shopifyData.products ?? [];
 
   if (products.length === 0) {
-    return NextResponse.json({ synced: 0, errors: [] });
+    return NextResponse.json({ synced: 0, errors: [] }, { headers: CORS_HEADERS });
   }
 
   // Transformar y hacer upsert por lotes de 50
@@ -162,5 +174,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ synced, errors });
+  return NextResponse.json({ synced, errors }, { headers: CORS_HEADERS });
 }
