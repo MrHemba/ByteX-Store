@@ -22,7 +22,6 @@ const CATEGORIES = [
   { id: "pc",         label: "PCs" },
   { id: "impresora",  label: "Impresoras" },
   { id: "monitor",    label: "Monitores" },
-  { id: "accesorio",  label: "Accesorios" },
   { id: "servicio",   label: "Servicios Digitales" },
   { id: "Zona Tech",  label: "Zona Tech" },
 ];
