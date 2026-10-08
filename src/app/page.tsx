@@ -25,7 +25,7 @@ const CATS = [
   { id:"pc",        label:"PCs" },
   { id:"impresora", label:"Impresoras" },
   { id:"monitor",   label:"Monitores" },
-  { id:"accesorio", label:"Accesorios" },
+  { id:"Zona Tech", label:"Zona Tech" },
 ];
 
 const CAT_CARDS = [
@@ -33,7 +33,7 @@ const CAT_CARDS = [
   { id:"pc",        label:"PCs Escritorio",     desc:"Equipos de escritorio y all-in-one",     icon:"🖥️", color:"#7C3AED" },
   { id:"impresora", label:"Impresoras",         desc:"Láser, tinta y multifuncionales",        icon:"🖨️", color:"#059669" },
   { id:"monitor",   label:"Monitores",          desc:"Pantallas Full HD e IPS de calidad",     icon:"🖵",  color:"#00C8FF" },
-  { id:"accesorio", label:"Accesorios",         desc:"Teclados, ratones, cables y más",        icon:"🖱️", color:"#F59E0B" },
+  { id:"Zona Tech", label:"Zona Tech",          desc:"Productos importados y novedades tech",  icon:"📦", color:"#00C8FF" },
   { id:"servicio",  label:"Servicios Digitales",desc:"Software, licencias y soporte técnico",  icon:"⚡", color:"#EC4899" },
 ];
 
