@@ -99,7 +99,9 @@ function transformProduct(p: ShopifyProduct) {
     codigo:              null,
     vendor:              p.vendor || null,
     synced_at:           new Date().toISOString(),
-    visible_tienda:      true,
+    // visible_tienda se omite intencionalmente:
+    // - productos nuevos toman el DEFAULT (true) de la tabla
+    // - productos existentes conservan el toggle que el usuario haya puesto en el ERP
   };
 }
 
@@ -160,10 +162,12 @@ export async function GET(req: NextRequest) {
   const { data: blocklist } = await supabase
     .from('dropi_blocklist')
     .select('shopify_id');
-  const blockedIds = new Set((blocklist ?? []).map((r: { shopify_id: number }) => r.shopify_id));
+  // Comparar como strings para evitar problemas de tipo con BIGINT de Supabase
+  const blockedIds = new Set((blocklist ?? []).map((r: { shopify_id: number }) => String(r.shopify_id)));
 
   // Filtrar productos bloqueados
-  const filteredProducts = products.filter(p => !blockedIds.has(p.id));
+  const filteredProducts = products.filter(p => !blockedIds.has(String(p.id)));
+  const blockedCount = products.length - filteredProducts.length;
 
   // Transformar y hacer upsert por lotes de 50
   const errors: string[] = [];
@@ -185,5 +189,10 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ synced, errors }, { headers: CORS_HEADERS });
+  return NextResponse.json({
+    total_shopify: products.length,
+    blocked:       blockedCount,
+    synced,
+    errors,
+  }, { headers: CORS_HEADERS });
 }
