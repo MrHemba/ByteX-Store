@@ -1,7 +1,16 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+
+export const metadata: Metadata = {
+  title: "Catálogo de Equipos",
+  description: "Explora nuestro catálogo de laptops, PCs, impresoras y accesorios de segunda mano revisados con garantía en Ecuador.",
+  alternates: {
+    canonical: "https://bytexstore.es/catalogo",
+  },
+};
 import ProductCard from "@/components/ProductCard";
 import { getProducts } from "@/lib/supabase";
 import { ArrowRight } from "lucide-react";
