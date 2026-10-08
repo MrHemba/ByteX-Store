@@ -17,13 +17,14 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const CATEGORIES = [
-  { id: "todos",    label: "Todos" },
-  { id: "laptop",   label: "Laptops" },
-  { id: "pc",       label: "PCs" },
-  { id: "impresora",label: "Impresoras" },
-  { id: "monitor",  label: "Monitores" },
-  { id: "accesorio",label: "Accesorios" },
-  { id: "servicio", label: "Servicios Digitales" },
+  { id: "todos",      label: "Todos" },
+  { id: "laptop",     label: "Laptops" },
+  { id: "pc",         label: "PCs" },
+  { id: "impresora",  label: "Impresoras" },
+  { id: "monitor",    label: "Monitores" },
+  { id: "accesorio",  label: "Accesorios" },
+  { id: "servicio",   label: "Servicios Digitales" },
+  { id: "importados", label: "Importados" },
 ];
 
 export default async function CatalogoPage({

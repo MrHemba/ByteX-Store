@@ -93,7 +93,7 @@ function transformProduct(p: ShopifyProduct) {
     disponible,
     condicion:           'segunda' as const,
     especificaciones:    buildEspecificaciones(p.options),
-    categoria:           p.product_type || null,
+    categoria:           'Importados',
     codigo:              null,
     vendor:              p.vendor || null,
     synced_at:           new Date().toISOString(),
