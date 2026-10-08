@@ -102,7 +102,7 @@ export async function getProducts(categoria?: string): Promise<Product[]> {
     especificaciones:    parseEspecificaciones(d.especificaciones),
     categoria:           d.categoria            || '',
     codigo:              d.codigo               ?? null,
-    stock:               d.disponible ? 1 : 0,
+    stock:               d.disponible ? 99 : 0,  // Dropi gestiona el stock real; 99 = disponible sin alerta de "último"
     es_servicio:         false,
   }));
 
@@ -134,7 +134,7 @@ export async function getProductBySlug(id: string): Promise<Product | null> {
       especificaciones:    parseEspecificaciones(data.especificaciones),
       categoria:           data.categoria           || '',
       codigo:              data.codigo              ?? null,
-      stock:               data.disponible ? 1 : 0,
+      stock:               data.disponible ? 99 : 0,
       es_servicio:         false,
     } as Product;
   }
