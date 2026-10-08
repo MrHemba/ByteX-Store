@@ -44,13 +44,25 @@ export async function getProducts(categoria?: string): Promise<Product[]> {
     equipQuery = equipQuery.ilike('categoria', `%${categoria}%`);
   }
 
-  const [{ data: prods, error: e1 }, { data: equips, error: e2 }] = await Promise.all([
+  // ── Productos Dropi (Shopify) ─────────────────────────────────────────────
+  let dropiQuery = supabase
+    .from('productos_dropi')
+    .select(`id, nombre, descripcion_publica, precio, fotos_tienda, condicion, especificaciones, categoria, codigo, vendor, disponible`)
+    .eq('visible_tienda', true);
+
+  if (categoria && categoria !== 'todos') {
+    dropiQuery = dropiQuery.ilike('categoria', `%${categoria}%`);
+  }
+
+  const [{ data: prods, error: e1 }, { data: equips, error: e2 }, { data: dropi, error: e3 }] = await Promise.all([
     prodQuery,
     equipQuery,
+    dropiQuery,
   ]);
 
   if (e1) console.error('[ByteX] Error productos:', e1.message);
   if (e2) console.error('[ByteX] Error equipos:', e2.message);
+  if (e3) console.error('[ByteX] Error productos_dropi:', e3.message);
 
   const prodMapped: Product[] = (prods || []).map((p: any) => ({
     id:                  String(p.id),
@@ -80,10 +92,53 @@ export async function getProducts(categoria?: string): Promise<Product[]> {
     es_servicio:         false,
   }));
 
-  return [...prodMapped, ...equipMapped];
+  const dropiMapped: Product[] = (dropi || []).map((d: any) => ({
+    id:                  d.id,                           // ya tiene formato dropi_X
+    nombre:              d.nombre,
+    descripcion_publica: d.descripcion_publica,
+    precio:              d.precio               ?? 0,
+    fotos_tienda:        d.fotos_tienda         || [],
+    condicion:           d.condicion            || 'segunda',
+    especificaciones:    parseEspecificaciones(d.especificaciones),
+    categoria:           d.categoria            || '',
+    codigo:              d.codigo               ?? null,
+    stock:               d.disponible ? 1 : 0,
+    es_servicio:         false,
+  }));
+
+  return [...prodMapped, ...equipMapped, ...dropiMapped];
 }
 
 export async function getProductBySlug(id: string): Promise<Product | null> {
+  // Productos Dropi tienen ID con prefijo "dropi_"
+  if (id.startsWith('dropi_')) {
+    const { data, error } = await supabase
+      .from('productos_dropi')
+      .select(`id, nombre, descripcion_publica, precio, fotos_tienda, condicion, especificaciones, categoria, codigo, vendor, disponible`)
+      .eq('id', id)
+      .eq('visible_tienda', true)
+      .single();
+
+    if (error || !data) {
+      console.error('[ByteX] Error cargando producto dropi:', error?.message);
+      return null;
+    }
+
+    return {
+      id:                  data.id,
+      nombre:              data.nombre,
+      descripcion_publica: data.descripcion_publica,
+      precio:              data.precio              ?? 0,
+      fotos_tienda:        data.fotos_tienda        || [],
+      condicion:           data.condicion           || 'segunda',
+      especificaciones:    parseEspecificaciones(data.especificaciones),
+      categoria:           data.categoria           || '',
+      codigo:              data.codigo              ?? null,
+      stock:               data.disponible ? 1 : 0,
+      es_servicio:         false,
+    } as Product;
+  }
+
   // Equipos compraventa tienen ID con prefijo "eq_"
   if (id.startsWith('eq_')) {
     const equipoId = id.replace('eq_', '');
@@ -183,8 +238,10 @@ export async function createCotizacion(payload: {
 
   const detalles = payload.items.map((item) => ({
     cotizacion_id:   cotizacion.id,
-    // Los equipos usan id "eq_N" — se almacena null en producto_id
-    producto_id:     String(item.producto_id).startsWith('eq_') ? null : Number(item.producto_id),
+    // Los equipos (eq_N) y productos Dropi (dropi_N) no tienen FK en producto_id
+    producto_id:     (String(item.producto_id).startsWith('eq_') || String(item.producto_id).startsWith('dropi_'))
+                       ? null
+                       : Number(item.producto_id),
     nombre_producto: item.nombre_producto,
     precio_original: item.precio_unitario,
     precio_final:    item.precio_final,
