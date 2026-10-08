@@ -24,7 +24,7 @@ const CATEGORIES = [
   { id: "monitor",    label: "Monitores" },
   { id: "accesorio",  label: "Accesorios" },
   { id: "servicio",   label: "Servicios Digitales" },
-  { id: "importados", label: "Importados" },
+  { id: "Zona Tech",  label: "Zona Tech" },
 ];
 
 export default async function CatalogoPage({

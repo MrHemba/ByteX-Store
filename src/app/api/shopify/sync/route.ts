@@ -80,7 +80,9 @@ function calcPrecio(variants: ShopifyVariant[]): number {
  * Transforma un producto Shopify al formato de la tabla productos_dropi.
  */
 function transformProduct(p: ShopifyProduct) {
-  const disponible = p.variants.some((v) => v.available);
+  // La API pública de Shopify no refleja el stock real de Dropi.
+  // Dropi es la fuente de verdad: si el producto está en el catálogo, está disponible.
+  const disponible = p.variants.length > 0;
 
   return {
     id:                  `dropi_${p.id}`,
@@ -91,9 +93,9 @@ function transformProduct(p: ShopifyProduct) {
     precio:              calcPrecio(p.variants),
     fotos_tienda:        p.images.map((img) => img.src),
     disponible,
-    condicion:           'segunda' as const,
+    condicion:           'nueva' as const,
     especificaciones:    buildEspecificaciones(p.options),
-    categoria:           'Importados',
+    categoria:           'Zona Tech',
     codigo:              null,
     vendor:              p.vendor || null,
     synced_at:           new Date().toISOString(),
