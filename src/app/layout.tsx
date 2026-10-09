@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Space_Grotesk, DM_Sans } from "next/font/google";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -9,6 +10,20 @@ import Script from "next/script";
 import Navbar from "@/components/Navbar";
 import NavigationProgress from "@/components/NavigationProgress";
 import PageTransition from "@/components/PageTransition";
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bytexstore.es";
 
@@ -101,7 +116,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" data-theme="light" className={`${spaceGrotesk.variable} ${dmSans.variable}`}>
       <head>
         {/* JSON-LD — datos estructurados para Google */}
         <script

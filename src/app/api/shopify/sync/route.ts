@@ -93,7 +93,7 @@ function transformProduct(p: ShopifyProduct) {
     precio:              calcPrecio(p.variants),
     fotos_tienda:        p.images.map((img) => img.src),
     disponible,
-    condicion:           'nueva' as const,
+    condicion:           'nuevo' as const,
     especificaciones:    buildEspecificaciones(p.options),
     categoria:           'Zona Tech',
     codigo:              null,

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Search, User, Menu, X } from "lucide-react";
+import { ShoppingCart, Search, Menu, X } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import CartDrawer from "./CartDrawer";
 import ThemeToggle from "./ThemeToggle";
@@ -21,9 +21,7 @@ export default function Navbar() {
   const [mounted, setMounted]       = useState(false);
   const { itemCount, openCart }     = useCart();
 
-  // Esperar a que el cliente monte antes de leer el carrito (evita hydration mismatch)
   useEffect(() => { setMounted(true); }, []);
-
   const count = mounted ? itemCount() : 0;
 
   useEffect(() => {
@@ -39,134 +37,284 @@ export default function Navbar() {
 
   return (
     <>
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-        background: scrolled ? "var(--bg-nav-scrolled)" : "var(--bg-nav)",
-        backdropFilter: "blur(16px)",
-        borderBottom: "1px solid var(--border-solid)",
-        boxShadow: scrolled ? "0 2px 20px rgba(0,0,0,0.5)" : "none",
-        transition: "all 0.3s",
-        overflow: "visible",
-      }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 16px" }}>
-          <div style={{ display: "flex", alignItems: "center", height: 100, gap: 20 }}>
+      <nav className={`navbar${scrolled ? " navbar--scrolled" : ""}`}>
+        <div className="navbar-inner">
 
-            {/* Logo */}
-            <Link href="/" style={{ textDecoration: "none", flexShrink: 0, display: "flex", alignItems: "center" }}>
-              <div style={{
-                position: "relative", height: 180, width: 580,
-                transition: "opacity 0.25s",
-              }} className="logo-nav">
-                <Image src="/logo.png" alt="ByteX Store" fill priority
-                  style={{ objectFit: "contain", objectPosition: "left center" }} sizes="580px" quality={100} />
-              </div>
-            </Link>
-
-            {/* Nav links — desktop */}
-            <div style={{ display: "flex", gap: 2, flex: 1, justifyContent: "center" }} className="hide-mobile">
-              {NAV.map(item => (
-                item.external
-                  ? <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer"
-                      style={{ color: "var(--text-3)", textDecoration: "none", fontSize: 13, fontWeight: 500,
-                        padding: "6px 14px", borderRadius: 6, transition: "all 0.14s" }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--accent)"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-3)"; }}
-                    >{item.label}</a>
-                  : <Link key={item.label} href={item.href}
-                      style={{ color: "var(--text-3)", textDecoration: "none", fontSize: 13, fontWeight: 500,
-                        padding: "6px 14px", borderRadius: 6, transition: "all 0.14s" }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--accent)"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-3)"; }}
-                    >{item.label}</Link>
-              ))}
+          {/* Logo */}
+          <Link href="/" className="navbar-logo" aria-label="ByteX Store — inicio">
+            <div style={{ position: "relative", height: 100, width: 335 }}>
+              <Image
+                src="/logo.png"
+                alt="ByteX Store"
+                fill
+                priority
+                style={{ objectFit: "contain", objectPosition: "left center" }}
+                sizes="335px"
+                quality={100}
+              />
             </div>
+          </Link>
 
-            {/* Right side */}
-            <div style={{ display: "flex", gap: 8, alignItems: "center", marginLeft: "auto" }}>
-              {/* Search */}
-              <form onSubmit={handleSearch} className="search-bar hide-mobile">
-                <Search size={14} style={{ color: "var(--text-4)", flexShrink: 0 }} />
-                <input placeholder="Buscar equipos..."
-                  value={search} onChange={e => setSearch(e.target.value)} />
-              </form>
-
-              {/* Cart */}
-              <button onClick={openCart} style={{
-                position: "relative", width: 38, height: 38, borderRadius: 8,
-                background: count > 0 ? "var(--accent-dim)" : "var(--bg-elevated)",
-                border: count > 0 ? "1px solid var(--accent)" : "1px solid var(--border-solid)",
-                color: count > 0 ? "var(--accent)" : "var(--text-3)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", transition: "all 0.15s",
-              }}>
-                <ShoppingCart size={16} />
-                {count > 0 && (
-                  <span style={{
-                    position: "absolute", top: -6, right: -6,
-                    width: 18, height: 18, borderRadius: "50%",
-                    background: "var(--accent)", color: "var(--bg)",
-                    fontSize: 9, fontWeight: 700, fontFamily: "var(--font-mono)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    border: "1.5px solid var(--bg)",
-                  }}>{count}</span>
-                )}
-              </button>
-
-              {/* Theme toggle */}
-              <ThemeToggle />
-
-              {/* Account icon */}
-              <div style={{
-                width: 38, height: 38, borderRadius: 8,
-                background: "var(--bg-elevated)", border: "1px solid var(--border-solid)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "var(--text-3)", cursor: "pointer",
-              }} className="hide-mobile">
-                <User size={16} />
-              </div>
-
-              {/* Mobile toggle */}
-              <button onClick={() => setMobileOpen(!mobileOpen)} className="show-mobile" style={{
-                width: 38, height: 38, borderRadius: 8,
-                background: "var(--bg-elevated)", border: "1px solid var(--border-solid)",
-                color: "var(--text-3)", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                {mobileOpen ? <X size={16} /> : <Menu size={16} />}
-              </button>
-            </div>
+          {/* Nav links — desktop */}
+          <div className="navbar-links hide-mobile">
+            {NAV.map(item =>
+              item.external ? (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="navbar-link"
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <Link key={item.label} href={item.href} className="navbar-link">
+                  {item.label}
+                </Link>
+              )
+            )}
           </div>
 
-          {/* Mobile menu */}
-          {mobileOpen && (
-            <div style={{ padding: "8px 0 16px", borderTop: "1px solid var(--border-solid)" }}>
-              <form onSubmit={handleSearch} style={{ padding: "8px 0 12px", display: "flex", gap: 8 }}>
-                <input className="input-field" placeholder="Buscar equipos..."
-                  value={search} onChange={e => setSearch(e.target.value)} />
-                <button type="submit" className="btn-primary" style={{ flexShrink: 0, padding: "10px 14px" }}>
-                  <Search size={14} />
-                </button>
-              </form>
-              {NAV.map(item => (
-                item.external
-                  ? <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer"
-                      style={{ display: "block", padding: "10px 12px", color: "var(--text-2)",
-                        textDecoration: "none", fontSize: 14, borderRadius: 6 }}
-                    >{item.label}</a>
-                  : <Link key={item.label} href={item.href} onClick={() => setMobileOpen(false)}
-                      style={{ display: "block", padding: "10px 12px", color: "var(--text-2)",
-                        textDecoration: "none", fontSize: 14, borderRadius: 6 }}
-                    >{item.label}</Link>
-              ))}
-            </div>
-          )}
+          {/* Right side */}
+          <div className="navbar-actions">
+            {/* Search — desktop inline */}
+            <form onSubmit={handleSearch} className="navbar-search hide-mobile">
+              <Search size={14} className="navbar-search-icon" />
+              <input
+                placeholder="Buscar equipos..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="navbar-search-input"
+              />
+            </form>
+
+            {/* Cart */}
+            <button
+              onClick={openCart}
+              className="navbar-icon-btn"
+              aria-label="Abrir carrito"
+            >
+              <ShoppingCart size={16} />
+              {count > 0 && (
+                <span className="navbar-cart-badge">{count}</span>
+              )}
+            </button>
+
+            {/* Theme toggle */}
+            <ThemeToggle />
+
+            {/* Mobile menu toggle */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="navbar-icon-btn show-mobile"
+              aria-label="Menú"
+            >
+              {mobileOpen ? <X size={16} /> : <Menu size={16} />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <div className="navbar-mobile">
+            <form onSubmit={handleSearch} className="navbar-mobile-search">
+              <input
+                className="input-field"
+                placeholder="Buscar equipos..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{ fontSize: 14 }}
+              />
+              <button type="submit" className="btn-primary" style={{ padding: "9px 14px", flexShrink: 0 }}>
+                <Search size={14} />
+              </button>
+            </form>
+            {NAV.map(item =>
+              item.external ? (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="navbar-mobile-link"
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="navbar-mobile-link"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              )
+            )}
+          </div>
+        )}
       </nav>
 
       <CartDrawer />
 
       <style>{`
-        .logo-nav:hover { opacity: 0.8; }
+        /* ── Navbar siempre oscura (independiente del tema) ── */
+        .navbar {
+          position: fixed;
+          top: 0; left: 0; right: 0;
+          z-index: 50;
+          height: 64px;
+          background: rgba(15, 15, 18, 0.96);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          transition: background 0.25s;
+          overflow: visible;
+        }
+        .navbar--scrolled {
+          background: rgba(10, 10, 13, 0.99);
+          border-bottom-color: rgba(255,255,255,0.06);
+        }
+        .navbar-inner {
+          max-width: 1440px;
+          margin: 0 auto;
+          padding: 0 24px;
+          height: 64px;
+          display: flex;
+          align-items: center;
+          gap: 28px;
+        }
+        .navbar-logo {
+          text-decoration: none;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          transition: opacity 0.2s;
+        }
+        .navbar-logo:hover { opacity: 0.85; }
+
+        .navbar-links {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+          flex: 1;
+        }
+        .navbar-link {
+          font-size: 14px;
+          font-weight: 500;
+          font-family: var(--font-ui);
+          color: rgba(255,255,255,0.65);
+          text-decoration: none;
+          padding: 5px 12px;
+          border-radius: 6px;
+          transition: color 0.15s, background 0.15s;
+          white-space: nowrap;
+        }
+        .navbar-link:hover {
+          color: #ffffff;
+          background: rgba(255,255,255,0.08);
+        }
+
+        .navbar-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-left: auto;
+        }
+
+        .navbar-search {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 6px;
+          padding: 0 10px;
+          height: 36px;
+          transition: border-color 0.15s;
+        }
+        .navbar-search:focus-within {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 2px var(--accent-dim);
+          background: rgba(255,255,255,0.10);
+        }
+        .navbar-search-icon { color: rgba(255,255,255,0.4); flex-shrink: 0; }
+        .navbar-search-input {
+          background: transparent;
+          border: none;
+          outline: none;
+          color: #ffffff;
+          font-family: var(--font-ui);
+          font-size: 13px;
+          width: 180px;
+        }
+        .navbar-search-input::placeholder { color: rgba(255,255,255,0.35); }
+
+        .navbar-icon-btn {
+          position: relative;
+          width: 36px; height: 36px;
+          border-radius: 6px;
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.12);
+          color: rgba(255,255,255,0.65);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: border-color 0.15s, color 0.15s, background 0.15s;
+          flex-shrink: 0;
+        }
+        .navbar-icon-btn:hover {
+          border-color: rgba(255,255,255,0.25);
+          color: #ffffff;
+          background: rgba(255,255,255,0.12);
+        }
+
+        .navbar-cart-badge {
+          position: absolute;
+          top: -5px; right: -5px;
+          width: 17px; height: 17px;
+          border-radius: 50%;
+          background: var(--accent);
+          color: #ffffff;
+          font-size: 9px;
+          font-weight: 600;
+          font-family: var(--font-ui);
+          display: flex; align-items: center; justify-content: center;
+          border: 2px solid #0f0f12;
+        }
+
+        /* Mobile menu */
+        .navbar-mobile {
+          background: rgba(15, 15, 18, 0.99);
+          border-top: 1px solid rgba(255,255,255,0.08);
+          padding: 12px 24px 20px;
+        }
+        .navbar-mobile-search {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+        .navbar-mobile-link {
+          display: block;
+          padding: 10px 8px;
+          color: rgba(255,255,255,0.65);
+          text-decoration: none;
+          font-size: 14px;
+          font-weight: 500;
+          font-family: var(--font-ui);
+          border-radius: 6px;
+          transition: color 0.15s, background 0.15s;
+        }
+        .navbar-mobile-link:hover {
+          color: #ffffff;
+          background: rgba(255,255,255,0.08);
+        }
+
+        @media (max-width: 768px) {
+          .navbar { height: auto; min-height: 64px; }
+          .navbar-inner { height: 64px; padding: 0 16px; gap: 16px; }
+          .navbar-mobile { padding: 12px 16px 20px; }
+        }
       `}</style>
     </>
   );
