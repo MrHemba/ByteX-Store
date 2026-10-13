@@ -42,7 +42,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="navbar-logo" aria-label="ByteX Store — inicio">
-            <div style={{ position: "relative", height: 100, width: 335 }}>
+            <div className="navbar-logo-box">
               <Image
                 src="/logo.png"
                 alt="ByteX Store"
@@ -193,6 +193,7 @@ export default function Navbar() {
           transition: opacity 0.2s;
         }
         .navbar-logo:hover { opacity: 0.85; }
+        .navbar-logo-box { position: relative; height: 100px; width: 335px; }
 
         .navbar-links {
           display: flex;
@@ -312,8 +313,13 @@ export default function Navbar() {
 
         @media (max-width: 768px) {
           .navbar { height: auto; min-height: 64px; }
-          .navbar-inner { height: 64px; padding: 0 16px; gap: 16px; }
+          .navbar-inner { height: 64px; padding: 0 16px; gap: 12px; }
           .navbar-mobile { padding: 12px 16px 20px; }
+          .navbar-logo { min-width: 0; flex-shrink: 1; }
+          .navbar-logo-box { width: 190px; height: 57px; }
+        }
+        @media (max-width: 380px) {
+          .navbar-logo-box { width: 150px; height: 45px; }
         }
       `}</style>
     </>

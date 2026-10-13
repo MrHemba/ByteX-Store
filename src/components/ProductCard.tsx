@@ -301,6 +301,17 @@ export default function ProductCard({ product }: { product: Product }) {
           background: var(--bg-alt);
           color: var(--text-3);
         }
+
+        /* Móvil: tarjetas compactas para 2 columnas */
+        @media (max-width: 480px) {
+          .pc-body { padding: 8px 9px 10px; gap: 4px; }
+          .pc-cat, .pc-stock { font-size: 10px; }
+          .pc-name { font-size: 12.5px; }
+          .pc-cond { font-size: 9px; padding: 2px 6px; }
+          .pc-price { font-size: 16px; }
+          .pc-btn { font-size: 12px; padding: 7px 6px; gap: 4px; }
+          .pc-heart { width: 26px; height: 26px; bottom: 6px; right: 6px; }
+        }
       `}</style>
     </Link>
   );

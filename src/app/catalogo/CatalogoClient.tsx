@@ -524,8 +524,14 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
           .cat-grid { grid-template-columns: repeat(3, 1fr); }
         }
         @media (max-width: 768px) {
-          .cat-topbar-inner { padding: 0 14px; }
-          .cat-body { padding: 0 14px 60px; flex-direction: column; }
+          .cat-topbar { position: static; }
+          .cat-topbar-inner {
+            height: auto; padding: 10px 14px; gap: 8px; flex-wrap: wrap;
+          }
+          .cat-topbar-left { order: 1; }
+          .cat-topbar-right { order: 2; margin-left: auto; }
+          .cat-search { order: 3; flex: 1 1 100%; max-width: none; min-height: 38px; }
+          .cat-body { padding: 0 12px 48px; flex-direction: column; align-items: stretch; }
           .cat-sidebar {
             display: none;
             width: 100%;
@@ -536,14 +542,13 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
             border-right: none;
           }
           .cat-sidebar.open { display: block; }
-          .cat-main { padding: 16px 0 0; border-left: none; }
+          .cat-main { width: 100%; padding: 14px 0 0; border-left: none; }
           .cat-sidebar-toggle { display: flex; }
-          .cat-search { max-width: none; flex: 1; }
           .cat-count { display: none; }
-          .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
         }
-        @media (max-width: 420px) {
-          .cat-grid { grid-template-columns: 1fr; }
+        @media (max-width: 380px) {
+          .cat-sel { font-size: 12px; padding-left: 8px; }
         }
       `}</style>
     </div>

@@ -222,12 +222,22 @@ export default function ProductRow({ product }: { product: Product }) {
           opacity: 0.4;
         }
         @media (max-width: 600px) {
-          .product-row { gap: 10px; padding: 10px; }
-          .row-img-wrap { width: 72px; height: 58px; }
+          .product-row { flex-wrap: wrap; align-items: flex-start; gap: 10px; padding: 10px; }
+          .row-img-wrap { width: 84px; height: 66px; }
+          .row-content { flex: 1 1 0; }
           .row-desc { display: none; }
           .row-specs { display: none; }
-          .row-name { font-size: 13px; }
-          .row-actions { gap: 6px; }
+          .row-name {
+            font-size: 13px; white-space: normal;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+          }
+          .row-actions {
+            flex: 1 1 100%;
+            flex-direction: row; align-items: center; justify-content: space-between;
+            gap: 10px; padding-top: 8px; border-top: 1px solid var(--border);
+          }
+          .row-price-area { align-items: flex-start; }
+          .row-add-btn { padding: 8px 14px; font-size: 12px; }
         }
       `}</style>
     </Link>

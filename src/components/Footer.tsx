@@ -18,7 +18,7 @@ export default function Footer() {
           {/* Col 1 — Brand */}
           <div className="footer-col footer-col-brand">
             <Link href="/" style={{ textDecoration: "none", display: "inline-block", marginBottom: 18 }}>
-              <div style={{ position: "relative", height: 140, width: 420 }}>
+              <div className="footer-logo-box">
                 <Image
                   src="/logo.png"
                   alt="ByteX Store"
@@ -109,6 +109,7 @@ export default function Footer() {
           margin: 0 auto;
           padding: 52px 24px 28px;
         }
+        .footer-logo-box { position: relative; height: 140px; width: 420px; max-width: 100%; }
         .footer-grid {
           display: grid;
           grid-template-columns: 2fr 1fr 1fr;
@@ -199,7 +200,8 @@ export default function Footer() {
           .footer-col-brand { grid-column: 1 / -1; }
         }
         @media (max-width: 600px) {
-          .footer-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+          .footer-grid { grid-template-columns: minmax(0, 1fr) !important; gap: 28px !important; }
+          .footer-logo-box { width: 260px; height: 87px; }
           .footer-col-brand { grid-column: auto; }
           .footer-bottom { flex-direction: column; align-items: flex-start; }
         }
