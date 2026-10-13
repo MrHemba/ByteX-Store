@@ -8,8 +8,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 /** Orden de presentación: jsonb reordena las claves, así que se fija aquí */
 const SPEC_ORDER = [
-  'Procesador', 'Generación', 'Memoria RAM', 'Disco SSD', 'Pantalla', 'Gráficos',
-  'Sistema Operativo', 'Color', 'Teclado', 'Conectividad', 'Puertos', 'Incluye',
+  'Procesador', 'Generación', 'Memoria RAM', 'Disco SSD', 'Tamaño', 'Pantalla', 'Resolución', 'Frecuencia', 'Panel',
+  'Tipo', 'Sistema de Tinta', 'Impresión', 'Velocidad',
+  'Gráficos', 'Placa Madre', 'Sistema Operativo', 'Color', 'Teclado', 'Conectividad', 'Puertos', 'Incluye',
   'Extras', 'Garantía', 'Modelo', 'Observación',
 ];
 
