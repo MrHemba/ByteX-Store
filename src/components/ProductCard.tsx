@@ -178,6 +178,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
         /* Body */
         .pc-body {
+          flex: 1;
           padding: 10px 12px 12px;
           display: flex;
           flex-direction: column;
@@ -225,6 +226,7 @@ export default function ProductCard({ product }: { product: Product }) {
           -webkit-box-orient: vertical;
           overflow: hidden;
           margin: 0;
+          min-height: calc(2 * 1.35em); /* reserva 2 líneas: alinea precio y botón entre tarjetas */
         }
 
         /* Condition */
@@ -248,7 +250,7 @@ export default function ProductCard({ product }: { product: Product }) {
           gap: 6px;
           border-top: 1px solid var(--border);
           padding-top: 7px;
-          margin-top: 4px;
+          margin-top: auto;
         }
         .pc-price-label {
           font-size: 11px;
