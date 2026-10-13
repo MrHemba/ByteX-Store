@@ -6,12 +6,24 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+/** Orden de presentación: jsonb reordena las claves, así que se fija aquí */
+const SPEC_ORDER = [
+  'Procesador', 'Generación', 'Memoria RAM', 'Disco SSD', 'Pantalla', 'Gráficos',
+  'Sistema Operativo', 'Color', 'Teclado', 'Conectividad', 'Puertos', 'Incluye',
+  'Extras', 'Garantía', 'Modelo', 'Observación',
+];
+
+function sortSpecs(obj: Record<string, string>): Record<string, string> {
+  const rank = (k: string) => { const i = SPEC_ORDER.indexOf(k); return i === -1 ? SPEC_ORDER.length : i; };
+  return Object.fromEntries(Object.entries(obj).sort(([a], [b]) => rank(a) - rank(b)));
+}
+
 /** Parsea especificaciones sin importar si llega como objeto o como string JSON */
 function parseEspecificaciones(raw: unknown): Record<string, string> {
   if (!raw) return {};
-  if (typeof raw === 'object' && !Array.isArray(raw)) return raw as Record<string, string>;
+  if (typeof raw === 'object' && !Array.isArray(raw)) return sortSpecs(raw as Record<string, string>);
   if (typeof raw === 'string') {
-    try { return JSON.parse(raw); } catch { return {}; }
+    try { return sortSpecs(JSON.parse(raw)); } catch { return {}; }
   }
   return {};
 }
