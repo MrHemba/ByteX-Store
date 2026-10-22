@@ -82,6 +82,8 @@ export default function Navbar() {
               <Search size={14} className="navbar-search-icon" />
               <input
                 placeholder="Buscar equipos..."
+                aria-label="Buscar equipos"
+                type="search"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="navbar-search-input"
@@ -92,7 +94,7 @@ export default function Navbar() {
             <button
               onClick={openCart}
               className="navbar-icon-btn"
-              aria-label="Abrir carrito"
+              aria-label={count > 0 ? `Abrir cotización (${count} producto${count !== 1 ? "s" : ""})` : "Abrir cotización"}
             >
               <ShoppingCart size={16} />
               {count > 0 && (
@@ -107,7 +109,8 @@ export default function Navbar() {
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="navbar-icon-btn show-mobile"
-              aria-label="Menú"
+              aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? <X size={16} /> : <Menu size={16} />}
             </button>
@@ -121,11 +124,13 @@ export default function Navbar() {
               <input
                 className="input-field"
                 placeholder="Buscar equipos..."
+                aria-label="Buscar equipos"
+                type="search"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 style={{ fontSize: 14 }}
               />
-              <button type="submit" className="btn-primary" style={{ padding: "9px 14px", flexShrink: 0 }}>
+              <button type="submit" className="btn-primary" aria-label="Buscar" style={{ padding: "9px 14px", flexShrink: 0 }}>
                 <Search size={14} />
               </button>
             </form>

@@ -4,9 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import {
-  ShoppingCart, MessageCircle, CheckCircle, Package, X,
+  ShoppingCart, CheckCircle, Package, X,
   ChevronLeft, ChevronRight, Home, Share2, Copy, Check,
+  BadgeCheck, Truck, MessageCircle,
 } from "lucide-react";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart-store";
 
@@ -29,6 +31,9 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const [activeTab, setActiveTab]   = useState<Tab>("descripcion");
   const [slideDir, setSlideDir]     = useState<"left" | "right" | null>(null);
   const [imgKey, setImgKey]         = useState(0);
+  // navigator.share solo existe en algunos navegadores (sobre todo móviles)
+  const [canShare, setCanShare]     = useState(false);
+  useEffect(() => { setCanShare(typeof navigator.share === "function"); }, []);
 
   const images    = product.fotos_tienda?.length > 0 ? product.fotos_tienda : [PLACEHOLDER];
   const condition = CONDITION_MAP[product.condicion] ?? CONDITION_MAP.segunda;
@@ -114,20 +119,16 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             <Image
               src={images[activeImg]} alt={product.nombre} fill priority
               sizes="(max-width:768px) 100vw, 50vw"
-              style={{ objectFit: "cover", transition: "transform 0.4s ease" }}
+              style={{ objectFit: "contain" }}
               unoptimized={images[activeImg].startsWith("data:")}
             />
-            {/* Condition badge */}
-            <div className="pd-img-badge">
-              <span className={condition.cls}>{condition.label}</span>
-            </div>
             {/* Nav arrows (appear on hover) */}
             {images.length > 1 && (
               <>
-                <button className="pd-img-arrow pd-img-arrow-l" onClick={e => { e.stopPropagation(); prevImg(); }}>
+                <button className="pd-img-arrow pd-img-arrow-l" aria-label="Foto anterior" onClick={e => { e.stopPropagation(); prevImg(); }}>
                   <ChevronLeft size={18} />
                 </button>
-                <button className="pd-img-arrow pd-img-arrow-r" onClick={e => { e.stopPropagation(); nextImg(); }}>
+                <button className="pd-img-arrow pd-img-arrow-r" aria-label="Foto siguiente" onClick={e => { e.stopPropagation(); nextImg(); }}>
                   <ChevronRight size={18} />
                 </button>
               </>
@@ -142,10 +143,11 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           {images.length > 1 && (
             <div className="pd-thumbs">
               {images.map((img, i) => (
-                <button key={i} onClick={() => setActiveImg(i)}
+                <button key={i} onClick={() => setActiveImg(i)} aria-label={`Ver foto ${i + 1}`}
+                  aria-current={activeImg === i}
                   className={`pd-thumb${activeImg === i ? " active" : ""}`}>
                   <Image src={img} alt={`foto ${i + 1}`} fill
-                    style={{ objectFit: "cover" }}
+                    style={{ objectFit: "contain", padding: 4 }}
                     unoptimized={img.startsWith("data:")} sizes="80px" />
                 </button>
               ))}
@@ -158,7 +160,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
           {/* Reference */}
           {product.codigo && (
-            <div className="pd-ref">ID: {product.codigo}</div>
+            <div className="pd-ref">Código <span>{product.codigo}</span></div>
           )}
 
           {/* Name */}
@@ -217,11 +219,6 @@ export default function ProductDetailClient({ product }: { product: Product }) {
               <Package size={12} /> Consúltanos y te avisamos cuando esté disponible
             </p>
           )}
-          {!product.es_servicio && isAvail && product.stock <= 3 && !dropiStock && (
-            <p className="pd-low-stock">
-              <Package size={12} /> ¡Quedan pocas unidades — asegura la tuya!
-            </p>
-          )}
 
           {/* Divider */}
           <div className="pd-divider" />
@@ -238,34 +235,34 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
             <div className="pd-ctas-row2">
               <a href={waUrl} target="_blank" rel="noopener noreferrer" className="pd-wa-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
+                <WhatsAppIcon size={16} />
                 Consultar por WhatsApp
               </a>
 
-              <button onClick={handleCopy} className="pd-share-btn" title="Copiar enlace">
+              <button onClick={handleCopy} className="pd-share-btn" title="Copiar enlace" aria-label={copied ? "Enlace copiado" : "Copiar enlace"}>
                 {copied ? <Check size={15} /> : <Copy size={15} />}
               </button>
-              <button className="pd-share-btn" title="Compartir"
-                onClick={() => navigator.share?.({ title: product.nombre, url: window.location.href })}>
-                <Share2 size={15} />
-              </button>
+              {canShare && (
+                <button className="pd-share-btn" title="Compartir" aria-label="Compartir"
+                  onClick={() => navigator.share({ title: product.nombre, url: window.location.href }).catch(() => {})}>
+                  <Share2 size={15} />
+                </button>
+              )}
             </div>
           </div>
 
           {/* Trust row */}
           <div className="pd-trust">
             <div className="pd-trust-item">
-              <span className="pd-trust-icon">✅</span>
+              <BadgeCheck size={16} strokeWidth={1.75} className="pd-trust-icon" />
               <span>Revisado y probado</span>
             </div>
             <div className="pd-trust-item">
-              <span className="pd-trust-icon">📦</span>
+              <Truck size={16} strokeWidth={1.75} className="pd-trust-icon" />
               <span>Envío coordinado</span>
             </div>
             <div className="pd-trust-item">
-              <span className="pd-trust-icon">💬</span>
+              <MessageCircle size={16} strokeWidth={1.75} className="pd-trust-icon" />
               <span>Soporte post-venta</span>
             </div>
           </div>
@@ -406,18 +403,13 @@ export default function ProductDetailClient({ product }: { product: Product }) {
         .pd-main-img-wrap {
           position: relative;
           aspect-ratio: 4/3;
-          border-radius: 6px;
+          border-radius: 10px;
           overflow: hidden;
-          background: var(--bg-alt);
+          background: #ffffff;
           border: 1px solid var(--border);
           margin-bottom: 12px;
         }
-        .pd-img-badge {
-          position: absolute;
-          top: 14px;
-          left: 14px;
-          z-index: 2;
-        }
+        .pd-main-img-wrap img { padding: clamp(12px, 3vw, 28px); }
         .pd-img-counter {
           position: absolute;
           bottom: 12px;
@@ -447,11 +439,14 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          opacity: 0;
-          transition: opacity 0.2s, background 0.15s;
+          transition: opacity 200ms var(--ease-out), background-color 160ms var(--ease-out);
         }
-        .pd-main-img-wrap:hover .pd-img-arrow { opacity: 1; }
-        .pd-img-arrow:hover { background: rgba(0,0,0,0.7) !important; }
+        /* Con ratón aparecen al pasar; en táctil quedan siempre visibles */
+        @media (hover: hover) and (pointer: fine) {
+          .pd-img-arrow { opacity: 0; }
+          .pd-main-img-wrap:hover .pd-img-arrow, .pd-img-arrow:focus-visible { opacity: 1; }
+          .pd-img-arrow:hover { background: rgba(0,0,0,0.7) !important; }
+        }
         .pd-img-arrow-l { left: 10px; }
         .pd-img-arrow-r { right: 10px; }
 
@@ -466,13 +461,15 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           height: 58px;
           border-radius: 8px;
           overflow: hidden;
-          background: var(--bg-alt);
-          border: 2px solid transparent;
+          background: #ffffff;
+          border: 2px solid var(--border);
           cursor: pointer;
           padding: 0;
-          transition: border-color 0.15s, transform 0.15s;
+          transition: border-color 160ms var(--ease-out);
         }
-        .pd-thumb:hover { transform: translateY(-2px); }
+        @media (hover: hover) and (pointer: fine) {
+          .pd-thumb:hover { border-color: var(--border-strong); }
+        }
         .pd-thumb.active {
           border-color: var(--accent);
           box-shadow: 0 0 0 1px var(--accent-dim);
@@ -481,19 +478,12 @@ export default function ProductDetailClient({ product }: { product: Product }) {
         /* ── INFO ── */
         .pd-info { display: flex; flex-direction: column; gap: 0; }
         .pd-ref {
-          font-size: 12px;
-          font-family: var(--font-mono);
-          color: var(--accent);
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          margin-bottom: 12px;
-          padding: 4px 10px;
-          background: var(--accent-dim);
-          border: 1px solid var(--accent);
-          border-radius: 4px;
-          display: inline-block;
-          width: fit-content;
+          font-size: 13px;
+          font-family: var(--font-ui);
+          color: var(--text-2);
+          margin-bottom: 8px;
         }
+        .pd-ref span { font-family: var(--font-mono); color: var(--text); letter-spacing: 0.02em; }
         .pd-name {
           font-size: clamp(22px, 2.5vw, 30px);
           font-weight: 700;
@@ -519,7 +509,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           border: 1px solid var(--border-strong);
           color: var(--text-2);
           text-decoration: none;
-          transition: all 0.15s;
+          transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out);
           font-family: var(--font-ui);
         }
         .pd-pill-cat:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
@@ -604,7 +594,6 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           padding: 14px 20px !important;
           font-size: 15px !important;
           border-radius: 8px !important;
-          transition: all 0.2s !important;
         }
         .pd-btn-main.btn-added {
           background: rgba(22,163,74,0.10) !important;
@@ -634,13 +623,13 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           font-weight: 700;
           text-decoration: none;
           cursor: pointer;
-          transition: all 0.18s;
+          transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out), transform 160ms var(--ease-out);
           white-space: nowrap;
         }
         [data-theme="dark"] .pd-wa-btn { color: #25D366; }
-        .pd-wa-btn:hover {
-          background: rgba(37,211,102,0.18);
-          border-color: #25D366;
+        .pd-wa-btn:active, .pd-share-btn:active { transform: scale(0.97); }
+        @media (hover: hover) and (pointer: fine) {
+          .pd-wa-btn:hover { background: rgba(37,211,102,0.18); border-color: #25D366; }
         }
         .pd-share-btn {
           width: 46px;
@@ -653,10 +642,12 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.15s;
+          transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 160ms var(--ease-out);
           flex-shrink: 0;
         }
-        .pd-share-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        @media (hover: hover) and (pointer: fine) {
+          .pd-share-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        }
 
         /* ── TRUST ── */
         .pd-trust {
@@ -679,7 +670,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           font-weight: 500;
           font-family: var(--font-ui);
         }
-        .pd-trust-icon { font-size: 14px; }
+        .pd-trust-icon { color: var(--accent); flex-shrink: 0; }
 
         /* ── TABS ── */
         .pd-tabs-section {
@@ -703,7 +694,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           color: var(--text-2);
           cursor: pointer;
           border-bottom: 2px solid transparent;
-          transition: all 0.15s;
+          transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out);
           position: relative;
           bottom: -1px;
         }
@@ -781,9 +772,9 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           background: rgba(255,255,255,0.08);
           border: 1px solid rgba(255,255,255,0.15);
           backdrop-filter: blur(8px);
-          transition: all 0.18s;
+          transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out);
         }
-        .lb-btn:hover { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.35) !important; transform: scale(1.08); }
+        .lb-btn:hover { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.35) !important; }
         .lb-close { top: 18px; right: 18px; }
         .lb-nav-l { left: 16px; top: 50%; transform: translateY(-50%); }
         .lb-nav-r { right: 16px; top: 50%; transform: translateY(-50%); }
@@ -796,7 +787,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           width: 8px; height: 8px; border-radius: 4px;
           background: rgba(255,255,255,0.25);
           border: none; cursor: pointer; padding: 0;
-          transition: all 0.25s cubic-bezier(.4,0,.2,1);
+          transition: width 250ms var(--ease-out), background-color 250ms var(--ease-out);
         }
         .lb-dot.active { width: 22px; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
 

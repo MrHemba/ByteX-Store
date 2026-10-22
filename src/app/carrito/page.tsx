@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Footer from "@/components/Footer";
 import { useCart, maxQuantity } from "@/lib/cart-store";
 import { createCotizacion, getProductsByIds } from "@/lib/supabase";
-import { Trash2, Plus, Minus, MessageCircle, Send, CheckCircle, AlertTriangle } from "lucide-react";
+import { Trash2, Plus, Minus, MessageCircle, Send, CheckCircle, AlertTriangle, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -100,10 +100,6 @@ export default function CarritoPage() {
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "40px 24px 80px" }}>
 
           {/* Title */}
-          <div style={{ marginBottom: 4, fontSize: 10, color: "var(--accent)", fontFamily: "var(--font-mono)",
-            letterSpacing: "0.15em", textTransform: "uppercase" }}>
-            // MI COTIZACIÓN
-          </div>
           <h1 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 900, letterSpacing: "-0.02em", marginBottom: 36 }}>
             {step === "success" ? "¡Cotización enviada!" : "Resumen de cotización"}
           </h1>
@@ -145,7 +141,7 @@ export default function CarritoPage() {
             <>
               {items.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "60px 24px", color: "var(--text-3)" }}>
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>🛒</div>
+                  <ShoppingCart size={40} strokeWidth={1.5} style={{ color: "var(--text-3)", marginBottom: 16 }} />
                   <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-2)", marginBottom: 16 }}>
                     Tu cotización está vacía
                   </div>
@@ -177,7 +173,8 @@ export default function CarritoPage() {
                             ${item.product.precio.toFixed(2)} c/u
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                            <button aria-label={`Quitar una unidad de ${item.product.nombre}`}
+                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                               style={{ width: 26, height: 26, borderRadius: 5, cursor: "pointer",
                                 border: "1px solid var(--border-solid)", background: "var(--bg-elevated)",
                                 color: "var(--text-3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -186,7 +183,8 @@ export default function CarritoPage() {
                             <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", minWidth: 22, textAlign: "center" }}>
                               {item.quantity}
                             </span>
-                            <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            <button aria-label={`Agregar una unidad de ${item.product.nombre}`}
+                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                               disabled={item.quantity >= maxQuantity(item.product)}
                               title={item.quantity >= maxQuantity(item.product) ? "No hay más unidades disponibles" : undefined}
                               style={{ width: 26, height: 26, borderRadius: 5,
@@ -196,7 +194,8 @@ export default function CarritoPage() {
                                 color: "var(--text-3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                               <Plus size={10} />
                             </button>
-                            <button onClick={() => removeItem(item.product.id)}
+                            <button aria-label={`Eliminar ${item.product.nombre}`}
+                        onClick={() => removeItem(item.product.id)}
                               style={{ width: 26, height: 26, borderRadius: 5, cursor: "pointer",
                                 border: "1px solid rgba(255,71,87,0.3)", background: "rgba(255,71,87,0.08)",
                                 color: "var(--error)", display: "flex", alignItems: "center", justifyContent: "center",

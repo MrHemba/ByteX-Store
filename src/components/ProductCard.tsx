@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, Check, Heart } from "lucide-react";
+import { ShoppingCart, Check } from "lucide-react";
 import { useState } from "react";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart-store";
@@ -42,7 +42,7 @@ export default function ProductCard({ product }: { product: Product }) {
             alt={product.nombre}
             fill
             sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,25vw"
-            style={{ objectFit: "cover" }}
+            style={{ objectFit: "contain" }}
             unoptimized={imgSrc.startsWith("data:")}
           />
 
@@ -53,10 +53,6 @@ export default function ProductCard({ product }: { product: Product }) {
             </div>
           )}
 
-          {/* Wishlist / placeholder action */}
-          <button className="pc-heart" onClick={e => e.preventDefault()} aria-label="Guardar">
-            <Heart size={14} />
-          </button>
         </div>
 
         {/* ── BODY ── */}
@@ -67,7 +63,7 @@ export default function ProductCard({ product }: { product: Product }) {
             <span className="pc-cat">{product.categoria || "Equipo"}</span>
             {!product.es_servicio && (
               <span className={`pc-stock${!available ? " out" : lowStock ? " low" : ""}`}>
-                {!available ? "Agotado" : lowStock ? "Último" : dropiStock ? "Disponible" : `Stock ${product.stock}`}
+                {!available ? "Agotado" : lowStock ? (product.stock === 1 ? "Último" : `Últimos ${product.stock}`) : dropiStock ? "Disponible" : `${product.stock} disponibles`}
               </span>
             )}
           </div>
@@ -82,13 +78,12 @@ export default function ProductCard({ product }: { product: Product }) {
 
           {/* Row 4: price */}
           <div className="pc-price-row">
-            <span className="pc-price-label">Precio</span>
             {product.precio > 0 ? (
               <span className="pc-price">
                 ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
               </span>
             ) : (
-              <span className="pc-consult">Consultar</span>
+              <span className="pc-consult">Precio a consultar</span>
             )}
           </div>
 
@@ -97,11 +92,16 @@ export default function ProductCard({ product }: { product: Product }) {
             onClick={handleAdd}
             disabled={!available}
             className={`pc-btn${added ? " added" : ""}${!available ? " disabled" : ""}`}
+            aria-label={available ? `Agregar ${product.nombre} a la cotización` : `${product.nombre} agotado`}
           >
-            {added
-              ? <><Check size={13} /> Agregado</>
-              : <><ShoppingCart size={13} /> Añadir al carrito</>
-            }
+            <span className="pc-btn-inner" key={added ? "added" : "idle"}>
+              {added
+                ? <><Check size={14} /> Agregado</>
+                : !available
+                  ? <>Agotado</>
+                  : <><ShoppingCart size={14} /> Cotizar</>
+              }
+            </span>
           </button>
 
         </div>
@@ -121,25 +121,38 @@ export default function ProductCard({ product }: { product: Product }) {
           border: 1px solid var(--border);
           border-radius: 8px;
           overflow: hidden;
-          transition: border-color 0.18s, box-shadow 0.18s;
+          transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
         }
-        .pc-card:hover {
-          border-color: var(--accent);
-          box-shadow: 0 0 0 3px var(--accent-dim);
+        @media (hover: hover) and (pointer: fine) {
+          .pc-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+          }
         }
+        .pc-link:focus-visible { outline: none; }
+        .pc-link:focus-visible .pc-card { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
 
         /* Image */
         .pc-img-wrap {
           position: relative;
           aspect-ratio: 1 / 1;
-          background: var(--bg-alt);
+          background: #ffffff;
           flex-shrink: 0;
           overflow: hidden;
+          border-bottom: 1px solid var(--border);
+        }
+        /* Las fotos de producto no se recortan: margen interior y escala sutil al pasar */
+        .pc-img-wrap img {
+          padding: 10px;
+          transition: transform 320ms var(--ease-out);
+        }
+        @media (hover: hover) and (pointer: fine) {
+          .pc-card:hover .pc-img-wrap img { transform: scale(1.04); }
         }
         .pc-sold-overlay {
           position: absolute;
           inset: 0;
-          background: rgba(0,0,0,0.45);
+          background: rgba(255,255,255,0.55);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -150,31 +163,12 @@ export default function ProductCard({ product }: { product: Product }) {
           font-weight: 600;
           font-family: var(--font-ui);
           color: #fff;
-          background: rgba(0,0,0,0.6);
-          padding: 4px 14px;
+          background: #18181B;
+          padding: 5px 14px;
           border-radius: 20px;
-          border: 1px solid rgba(255,255,255,0.3);
           letter-spacing: 0.05em;
           text-transform: uppercase;
         }
-        .pc-heart {
-          position: absolute;
-          bottom: 10px;
-          right: 10px;
-          z-index: 4;
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.92);
-          border: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          color: #A1A1AA;
-          transition: color 0.15s, background 0.15s;
-        }
-        .pc-heart:hover { color: #E11D48; background: #fff; }
 
         /* Body */
         .pc-body {
@@ -207,9 +201,10 @@ export default function ProductCard({ product }: { product: Product }) {
           font-size: 11px;
           font-weight: 600;
           font-family: var(--font-ui);
-          color: var(--accent);
+          color: var(--text-2);
           white-space: nowrap;
           flex-shrink: 0;
+          font-variant-numeric: tabular-nums;
         }
         .pc-stock.low { color: var(--warning); }
         .pc-stock.out { color: var(--error); }
@@ -248,15 +243,8 @@ export default function ProductCard({ product }: { product: Product }) {
           align-items: baseline;
           justify-content: space-between;
           gap: 6px;
-          border-top: 1px solid var(--border);
-          padding-top: 7px;
+          padding-top: 6px;
           margin-top: auto;
-        }
-        .pc-price-label {
-          font-size: 11px;
-          font-family: var(--font-ui);
-          color: var(--text-3);
-          font-weight: 500;
         }
         .pc-price {
           font-size: 18px;
@@ -269,8 +257,7 @@ export default function ProductCard({ product }: { product: Product }) {
         .pc-consult {
           font-size: 13px;
           font-family: var(--font-ui);
-          color: var(--text-3);
-          font-style: italic;
+          color: var(--text-2);
         }
 
         /* CTA Button */
@@ -289,12 +276,23 @@ export default function ProductCard({ product }: { product: Product }) {
           font-size: 13px;
           font-weight: 600;
           font-family: var(--font-ui);
-          transition: background 0.15s;
           white-space: nowrap;
+          min-height: 36px;
         }
-        .pc-btn:hover:not(.disabled) { background: var(--accent-hover); }
-        .pc-btn.added {
-          background: #16A34A !important;
+        @media (hover: hover) and (pointer: fine) {
+          .pc-btn:hover:not(.disabled) { background: var(--accent-hover); }
+        }
+        .pc-btn.added { background: var(--success) !important; }
+        /* El cambio de texto entra con un leve desenfoque en vez de saltar */
+        .pc-btn-inner {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .pc-btn.added .pc-btn-inner { animation: pcBtnSwap 220ms var(--ease-out); }
+        @keyframes pcBtnSwap {
+          from { opacity: 0; filter: blur(3px); transform: translateY(2px); }
+          to   { opacity: 1; filter: blur(0);   transform: translateY(0); }
         }
         .pc-btn.disabled {
           cursor: not-allowed;
@@ -309,8 +307,8 @@ export default function ProductCard({ product }: { product: Product }) {
           .pc-name { font-size: 12.5px; }
           .pc-cond { font-size: 9px; padding: 2px 6px; }
           .pc-price { font-size: 16px; }
-          .pc-btn { font-size: 12px; padding: 7px 6px; gap: 4px; }
-          .pc-heart { width: 26px; height: 26px; bottom: 6px; right: 6px; }
+          .pc-btn { font-size: 12.5px; padding: 7px 6px; }
+          .pc-img-wrap img { padding: 6px; }
         }
       `}</style>
     </Link>

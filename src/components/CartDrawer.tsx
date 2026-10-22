@@ -3,7 +3,7 @@ import { X, Trash2, ShoppingBag, Plus, Minus, Send, ArrowRight } from "lucide-re
 import Image from "next/image";
 import Link from "next/link";
 import { useCart, maxQuantity } from "@/lib/cart-store";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const BLANK = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect fill='%23F4F4F5' width='60' height='60'/%3E%3C/svg%3E`;
 
@@ -14,6 +14,16 @@ export default function CartDrawer() {
   const count    = mounted ? itemCount() : 0;
   const totalVal = mounted ? total()     : 0;
   const items    = mounted ? storedItems : [];
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Escape cierra; al abrir, el foco va al botón de cerrar
+  useEffect(() => {
+    if (!isOpen) return;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeCart(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, closeCart]);
 
   return (
     <>
@@ -25,18 +35,18 @@ export default function CartDrawer() {
           background: "rgba(9,9,11,0.50)", backdropFilter: "blur(4px)",
           opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? "auto" : "none",
-          transition: "opacity 0.25s",
+          transition: "opacity 240ms var(--ease-out)",
         }}
       />
 
-      {/* Drawer panel */}
-      <div style={{
+      {/* Drawer panel — inert cuando está cerrado: fuera del foco de teclado y del lector de pantalla */}
+      <div role="dialog" aria-modal="true" aria-label="Tu cotización" inert={!isOpen} style={{
         position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 201,
         width: 380, maxWidth: "100vw",
         background: "var(--surface)",
         borderLeft: "1px solid var(--border)",
         transform: isOpen ? "translateX(0)" : "translateX(100%)",
-        transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)",
+        transition: "transform 320ms var(--ease-drawer)",
         display: "flex", flexDirection: "column",
       }}>
 
@@ -70,9 +80,11 @@ export default function CartDrawer() {
             )}
           </div>
           <button
+            ref={closeRef}
             onClick={closeCart}
+            aria-label="Cerrar"
             style={{
-              width: 30, height: 30, borderRadius: 6,
+              width: 32, height: 32, borderRadius: 6,
               background: "var(--bg-alt)",
               border: "1px solid var(--border)",
               color: "var(--text-3)",
@@ -158,6 +170,7 @@ export default function CartDrawer() {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <button
+                        aria-label={`Quitar una unidad de ${item.product.nombre}`}
                         onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                         style={{
                           width: 24, height: 24, borderRadius: 4,
@@ -177,6 +190,7 @@ export default function CartDrawer() {
                         {item.quantity}
                       </span>
                       <button
+                        aria-label={`Agregar una unidad de ${item.product.nombre}`}
                         onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                         disabled={item.quantity >= maxQuantity(item.product)}
                         title={item.quantity >= maxQuantity(item.product) ? "No hay más unidades disponibles" : undefined}
@@ -196,7 +210,8 @@ export default function CartDrawer() {
                     </div>
 
                     <button
-                      onClick={() => removeItem(item.product.id)}
+                      aria-label={`Eliminar ${item.product.nombre}`}
+                        onClick={() => removeItem(item.product.id)}
                       style={{
                         width: 24, height: 24, borderRadius: 4,
                         background: "rgba(220,38,38,0.08)",

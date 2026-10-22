@@ -2,8 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { MessageCircle, MapPin } from "lucide-react";
-
-const CATEGORIES = ["Laptops", "PCs", "Impresoras", "Monitores", "Zona Tech", "Servicios"];
+import { CATEGORIES } from "@/lib/categories";
 
 export default function Footer() {
   const wNum = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
@@ -47,13 +46,13 @@ export default function Footer() {
           <div className="footer-col">
             <h4 className="footer-heading">Catálogo</h4>
             <nav className="footer-nav">
-              {CATEGORIES.map(item => (
+              {CATEGORIES.map(({ id, label }) => (
                 <Link
-                  key={item}
-                  href={`/catalogo?cat=${item.toLowerCase()}`}
+                  key={id}
+                  href={`/catalogo?cat=${encodeURIComponent(id)}`}
                   className="footer-link"
                 >
-                  {item}
+                  {label}
                 </Link>
               ))}
             </nav>
@@ -119,7 +118,7 @@ export default function Footer() {
         .footer-desc {
           font-size: 14px;
           font-family: var(--font-ui);
-          color: rgba(255,255,255,0.45);
+          color: rgba(255,255,255,0.62);
           line-height: 1.7;
           max-width: 280px;
           margin-bottom: 20px;
@@ -130,7 +129,7 @@ export default function Footer() {
           font-family: var(--font-ui);
           letter-spacing: 0.1em;
           text-transform: uppercase;
-          color: rgba(255,255,255,0.35);
+          color: rgba(255,255,255,0.5);
           margin-bottom: 16px;
         }
         .footer-nav {
@@ -143,18 +142,20 @@ export default function Footer() {
           padding: 5px 0;
           font-size: 15px;
           font-family: var(--font-ui);
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,255,255,0.68);
           text-decoration: none;
-          transition: color 0.15s;
+          transition: color 160ms var(--ease-out);
         }
-        .footer-link:hover { color: #ffffff; }
+        @media (hover: hover) and (pointer: fine) {
+          .footer-link:hover { color: #ffffff; }
+        }
         .footer-info-row {
           display: flex;
           gap: 8px;
           align-items: flex-start;
           font-size: 15px;
           font-family: var(--font-ui);
-          color: rgba(255,255,255,0.55);
+          color: rgba(255,255,255,0.68);
         }
         .footer-wa-btn {
           display: inline-flex;
@@ -184,14 +185,14 @@ export default function Footer() {
         .footer-copy {
           font-size: 13px;
           font-family: var(--font-ui);
-          color: rgba(255,255,255,0.3);
+          color: rgba(255,255,255,0.5);
         }
         .footer-bottom-link {
           font-size: 13px;
           font-family: var(--font-ui);
-          color: rgba(255,255,255,0.35);
+          color: rgba(255,255,255,0.55);
           text-decoration: none;
-          transition: color 0.15s;
+          transition: color 160ms var(--ease-out);
         }
         .footer-bottom-link:hover { color: rgba(255,255,255,0.75); }
 

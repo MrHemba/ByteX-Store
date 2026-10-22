@@ -6,23 +6,22 @@ export default function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    const isDark = saved ? saved === "dark" : false;
-    setDark(isDark);
-    document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+    // El script de layout.tsx ya aplicó el tema antes de pintar; aquí solo se sincroniza el icono
+    setDark(document.documentElement.getAttribute("data-theme") === "dark");
   }, []);
 
   const toggle = () => {
     const next = !dark;
     setDark(next);
     document.documentElement.setAttribute("data-theme", next ? "dark" : "light");
-    localStorage.setItem("theme", next ? "dark" : "light");
+    try { localStorage.setItem("theme", next ? "dark" : "light"); } catch {}
   };
 
   return (
     <button
       onClick={toggle}
       title={dark ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
+      aria-label={dark ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
       style={{
         width: 36,
         height: 36,

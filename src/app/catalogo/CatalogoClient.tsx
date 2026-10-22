@@ -1,19 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Search, LayoutGrid, List, X, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Search, LayoutGrid, List, X, ChevronDown, SlidersHorizontal, PackageSearch } from "lucide-react";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 import ProductCard from "@/components/ProductCard";
 import ProductRow from "@/components/ProductRow";
 import type { Product } from "@/lib/types";
+import { CATEGORIES as STORE_CATEGORIES, matchesCategory } from "@/lib/categories";
 
 const CATEGORIES = [
-  { id: "todos",      label: "Todos los equipos" },
-  { id: "laptop",     label: "Laptops" },
-  { id: "pc",         label: "PCs Escritorio" },
-  { id: "impresora",  label: "Impresoras" },
-  { id: "monitor",    label: "Monitores" },
-  { id: "Zona Tech",  label: "Zona Tech" },
-  { id: "servicio",   label: "Servicios" },
+  { id: "todos", label: "Todos los equipos" },
+  ...STORE_CATEGORIES.map(({ id, label }) => ({ id, label })),
 ];
 
 const CONDITIONS = [
@@ -49,7 +46,7 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
   const filtered = useMemo(() => {
     let list = [...allProducts];
     if (category !== "todos") {
-      list = list.filter(p => p.categoria?.toLowerCase().includes(category.toLowerCase()));
+      list = list.filter(p => matchesCategory(p.categoria, category));
     }
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -78,6 +75,15 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
   const resetAll     = () => { setCategory("todos"); setCondition("todos"); setOnlyAvail(false); setQuery(""); setInputVal(""); };
 
   const hasFilters = category !== "todos" || condition !== "todos" || onlyAvail || query;
+  const activeFilters = (category !== "todos" ? 1 : 0) + (condition !== "todos" ? 1 : 0) + (onlyAvail ? 1 : 0);
+
+  // Hoja de filtros (móvil): Escape la cierra
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSidebarOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [sidebarOpen]);
 
   return (
     <div className="cat-root">
@@ -88,9 +94,11 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
 
           {/* Left: title + count */}
           <div className="cat-topbar-left">
-            <button className="cat-sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <button className="cat-sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-expanded={sidebarOpen} aria-controls="cat-filtros">
               <SlidersHorizontal size={15} />
               Filtros
+              {activeFilters > 0 && <span className="cat-filter-count">{activeFilters}</span>}
             </button>
             <span className="cat-count">
               <strong>{filtered.length}</strong> equipo{filtered.length !== 1 ? "s" : ""}
@@ -107,7 +115,9 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
               className="cat-search-inp"
               placeholder="Buscar equipos..."
               value={inputVal}
-              onChange={e => setInputVal(e.target.value)}
+              onChange={e => { setInputVal(e.target.value); setQuery(e.target.value); }}
+              type="search"
+              aria-label="Buscar equipos"
             />
             {inputVal && (
               <button type="button" onClick={clearSearch} className="cat-search-x">
@@ -143,7 +153,16 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
       <div className="cat-body">
 
         {/* SIDEBAR */}
-        <aside className={`cat-sidebar${sidebarOpen ? " open" : ""}`}>
+        <div className={`cat-sheet-backdrop${sidebarOpen ? " open" : ""}`} onClick={() => setSidebarOpen(false)} aria-hidden="true" />
+        <aside id="cat-filtros" className={`cat-sidebar${sidebarOpen ? " open" : ""}`} aria-label="Filtros">
+
+          {/* Cabecera de la hoja (solo móvil) */}
+          <div className="cat-sheet-head">
+            <span className="cat-sheet-title">Filtros</span>
+            <button className="cat-sheet-close" onClick={() => setSidebarOpen(false)} aria-label="Cerrar filtros">
+              <X size={16} />
+            </button>
+          </div>
 
           {/* Categorías */}
           <div className="sidebar-section">
@@ -184,12 +203,13 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
 
           {/* Solo disponibles */}
           <div className="sidebar-section">
-            <label className="sidebar-avail">
+            <button type="button" role="switch" aria-checked={onlyAvail}
+              onClick={() => setOnlyAvail(!onlyAvail)} className="sidebar-avail">
               <span className="sidebar-check-label">Solo disponibles</span>
-              <div onClick={() => setOnlyAvail(!onlyAvail)} className={`sidebar-toggle${onlyAvail ? " on" : ""}`}>
-                <div className="sidebar-thumb" />
-              </div>
-            </label>
+              <span className={`sidebar-toggle${onlyAvail ? " on" : ""}`}>
+                <span className="sidebar-thumb" />
+              </span>
+            </button>
           </div>
 
           {/* Reset */}
@@ -203,16 +223,29 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
               </div>
             </>
           )}
+
+          {/* Pie de la hoja (solo móvil) */}
+          <div className="cat-sheet-foot">
+            <button className="btn-primary" style={{ width: "100%", padding: "12px 18px" }} onClick={() => setSidebarOpen(false)}>
+              Ver {filtered.length} equipo{filtered.length !== 1 ? "s" : ""}
+            </button>
+          </div>
         </aside>
 
         {/* PRODUCTS */}
         <main className="cat-main">
           {filtered.length === 0 ? (
             <div className="cat-empty">
-              <div className="empty-ico">📦</div>
+              <PackageSearch size={36} strokeWidth={1.5} className="empty-ico" />
               <p className="empty-title">{query ? `Sin resultados para "${query}"` : "No hay equipos aquí"}</p>
               <p className="empty-sub">Escríbenos por WhatsApp y conseguimos lo que necesitas.</p>
-              <button onClick={resetAll} className="btn-outline">Ver todos los equipos</button>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+                <button onClick={resetAll} className="btn-outline">Ver todos los equipos</button>
+                <a className="btn-ghost" target="_blank" rel="noopener noreferrer"
+                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hola, estoy buscando: ${query || "un equipo"}`)}`}>
+                  <WhatsAppIcon size={15} /> Preguntar por WhatsApp
+                </a>
+              </div>
             </div>
           ) : viewMode === "grid" ? (
             <div className="cat-grid">
@@ -435,11 +468,17 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
         }
 
         .sidebar-avail {
+          width: 100%;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 5px 10px;
+          padding: 8px 10px;
           cursor: pointer;
+          background: none;
+          border: none;
+          border-radius: 6px;
+          font: inherit;
+          text-align: left;
         }
         .sidebar-toggle {
           width: 34px; height: 18px;
@@ -448,7 +487,7 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
           border: 1px solid var(--border);
           position: relative;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: background-color 200ms var(--ease-out), border-color 200ms var(--ease-out);
           flex-shrink: 0;
         }
         .sidebar-toggle.on { background: var(--accent-dim); border-color: var(--accent); }
@@ -458,9 +497,9 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
           width: 12px; height: 12px;
           border-radius: 50%;
           background: var(--text-3);
-          transition: all 0.2s;
+          transition: transform 200ms var(--ease-out), background-color 200ms var(--ease-out);
         }
-        .sidebar-toggle.on .sidebar-thumb { left: 18px; background: var(--accent); }
+        .sidebar-toggle.on .sidebar-thumb { transform: translateX(16px); background: var(--accent); }
 
         .sidebar-reset {
           display: flex;
@@ -504,7 +543,7 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
           text-align: center;
           padding: 80px 24px;
         }
-        .empty-ico { font-size: 36px; margin-bottom: 14px; }
+        .empty-ico { color: var(--text-3); margin: 0 auto 14px; display: block; }
         .empty-title {
           font-size: 16px; font-weight: 600;
           font-family: var(--font-display);
@@ -516,6 +555,20 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
         }
 
         /* ── RESPONSIVE ── */
+        .cat-sheet-backdrop, .cat-sheet-head, .cat-sheet-foot { display: none; }
+        .cat-sheet-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--text); }
+        .cat-sheet-close {
+          width: 34px; height: 34px; border-radius: 8px;
+          display: grid; place-items: center;
+          background: var(--bg-alt); border: 1px solid var(--border);
+          color: var(--text-2); cursor: pointer;
+        }
+        .cat-filter-count {
+          min-width: 18px; height: 18px; padding: 0 5px;
+          border-radius: 9px;
+          background: var(--accent); color: #fff;
+          font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
+        }
         @media (max-width: 1400px) {
           .cat-grid { grid-template-columns: repeat(4, 1fr); }
         }
@@ -532,16 +585,52 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
           .cat-topbar-right { order: 2; margin-left: auto; }
           .cat-search { order: 3; flex: 1 1 100%; max-width: none; min-height: 38px; }
           .cat-body { padding: 0 12px 48px; flex-direction: column; align-items: stretch; }
+          /* Filtros como hoja inferior: no empujan el listado */
           .cat-sidebar {
-            display: none;
+            position: fixed;
+            left: 0; right: 0; bottom: 0; top: auto;
+            z-index: 301;
             width: 100%;
-            position: static;
-            max-height: none;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border);
-            border-right: none;
+            max-height: 82vh;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding: 0 16px;
+            background: var(--surface);
+            border: none;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -12px 40px rgba(0,0,0,0.18);
+            transform: translateY(100%);
+            visibility: hidden;
+            transition: transform 320ms var(--ease-drawer), visibility 0s linear 320ms;
           }
-          .cat-sidebar.open { display: block; }
+          .cat-sidebar.open {
+            transform: translateY(0);
+            visibility: visible;
+            transition: transform 320ms var(--ease-drawer), visibility 0s;
+          }
+          .cat-sheet-backdrop {
+            display: block;
+            position: fixed; inset: 0; z-index: 300;
+            background: rgba(9,9,11,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 240ms var(--ease-out);
+          }
+          .cat-sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+          .cat-sheet-head {
+            display: flex;
+            position: sticky; top: 0; z-index: 1;
+            align-items: center; justify-content: space-between;
+            padding: 14px 0 10px;
+            background: var(--surface);
+          }
+          .cat-sheet-foot {
+            display: block;
+            position: sticky; bottom: 0;
+            padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+          }
           .cat-main { width: 100%; padding: 14px 0 0; border-left: none; }
           .cat-sidebar-toggle { display: flex; }
           .cat-count { display: none; }

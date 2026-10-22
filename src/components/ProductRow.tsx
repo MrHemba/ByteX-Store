@@ -42,7 +42,7 @@ export default function ProductRow({ product }: { product: Product }) {
             alt={product.nombre}
             fill
             sizes="120px"
-            style={{ objectFit: "cover" }}
+            style={{ objectFit: "contain", padding: 6 }}
             unoptimized={imgSrc.startsWith("data:")}
           />
           {!available && (
@@ -78,14 +78,16 @@ export default function ProductRow({ product }: { product: Product }) {
         <div className="row-actions">
           <div className="row-price-area">
             {!product.es_servicio && available && product.stock <= 2 && !dropiStock && (
-              <span style={{ fontSize: 10, color: "var(--warning)", fontWeight: 500 }}>¡Último disponible!</span>
+              <span style={{ fontSize: 11, color: "var(--warning)", fontWeight: 600 }}>
+                {product.stock === 1 ? "Último disponible" : `Últimos ${product.stock}`}
+              </span>
             )}
             {product.precio > 0 ? (
               <span className="price-tag" style={{ fontSize: 22 }}>
                 ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
               </span>
             ) : (
-              <span style={{ fontSize: 13, color: "var(--text-3)", fontStyle: "italic" }}>Consultar precio</span>
+              <span style={{ fontSize: 13, color: "var(--text-2)" }}>Precio a consultar</span>
             )}
           </div>
 
@@ -93,10 +95,13 @@ export default function ProductRow({ product }: { product: Product }) {
             onClick={handleAdd}
             disabled={!available}
             className={`row-add-btn${added ? " added" : ""}${!available ? " disabled" : ""}`}
+            aria-label={available ? `Agregar ${product.nombre} a la cotización` : `${product.nombre} agotado`}
           >
             {added
-              ? <><Check size={13} /> Agregado</>
-              : <><ShoppingCart size={13} /> Añadir</>
+              ? <><Check size={14} /> Agregado</>
+              : !available
+                ? <>Agotado</>
+                : <><ShoppingCart size={14} /> Cotizar</>
             }
           </button>
         </div>
@@ -116,7 +121,8 @@ export default function ProductRow({ product }: { product: Product }) {
           height: 80px;
           border-radius: 8px;
           overflow: hidden;
-          background: var(--bg-elevated);
+          background: #ffffff;
+          border: 1px solid var(--border);
           flex-shrink: 0;
         }
         .row-sold-overlay {
@@ -198,20 +204,20 @@ export default function ProductRow({ product }: { product: Product }) {
           background: var(--primary-light);
           border: 1.5px solid var(--accent);
           color: var(--accent);
-          font-size: 11px;
+          font-size: 12.5px;
           font-weight: 600;
           font-family: var(--font-ui);
           white-space: nowrap;
-          transition: all 0.18s;
+          min-height: 36px;
+          transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out), border-color 160ms var(--ease-out), transform 160ms var(--ease-out);
         }
         [data-theme="dark"] .row-add-btn {
           background: var(--accent-dim);
         }
-        .row-add-btn:hover:not(.disabled) {
-          background: var(--accent);
-          color: #ffffff;
-          box-shadow: var(--shadow-primary);
+        @media (hover: hover) and (pointer: fine) {
+          .row-add-btn:hover:not(.disabled) { background: var(--accent); color: #ffffff; }
         }
+        .row-add-btn:active:not(.disabled) { transform: scale(0.97); }
         .row-add-btn.added {
           background: rgba(18,183,106,0.10);
           border-color: rgba(18,183,106,0.35);
