@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-const SHOPIFY_PRODUCTS_URL =
-  'https://beevenombs.myshopify.com/products.json?limit=250';
+const SHOPIFY_PRODUCTS_URL = `https://${process.env.SHOPIFY_STORE || 'beevenombs.myshopify.com'}/products.json`;
+const PAGE_SIZE = 250;   // máximo que permite Shopify
+const MAX_PAGES = 40;    // tope de seguridad: 10.000 productos
 
 // ── Tipos Shopify ──────────────────────────────────────────────────────────────
 
@@ -19,9 +20,6 @@ interface ShopifyVariant {
   id: number;
   price: string;
   available: boolean;
-  option1: string | null;
-  option2: string | null;
-  option3: string | null;
 }
 
 interface ShopifyProduct {
@@ -30,14 +28,9 @@ interface ShopifyProduct {
   title: string;
   body_html: string | null;
   vendor: string | null;
-  product_type: string | null;
   variants: ShopifyVariant[];
   images: ShopifyImage[];
   options: ShopifyOption[];
-}
-
-interface ShopifyResponse {
-  products: ShopifyProduct[];
 }
 
 // ── Helpers de transformación ──────────────────────────────────────────────────
@@ -49,17 +42,15 @@ function stripHtml(html: string | null): string | null {
 
 /**
  * Construye el objeto especificaciones a partir de las opciones del producto.
- * Ejemplo: { "Combos": ["1 Pote", "Combo 2 Potes"], "Talla": ["S", "M", "L"] }
+ * Ejemplo: { "Combos": "1 Pote, Combo 2 Potes", "Talla": "S, M, L" }
  */
-function buildEspecificaciones(
-  options: ShopifyOption[]
-): Record<string, string[]> {
-  const specs: Record<string, string[]> = {};
+function buildEspecificaciones(options: ShopifyOption[]): Record<string, string> {
+  const specs: Record<string, string> = {};
   for (const opt of options) {
     if (opt.name.toLowerCase() === 'title' && opt.values[0] === 'Default Title') {
       continue; // Opción genérica de Shopify — ignorar
     }
-    specs[opt.name] = opt.values;
+    specs[opt.name] = opt.values.join(', ');
   }
   return specs;
 }
@@ -78,6 +69,7 @@ function calcPrecio(variants: ShopifyVariant[]): number {
 
 /**
  * Transforma un producto Shopify al formato de la tabla productos_dropi.
+ * categoria y condicion solo se aplican al crear: en productos existentes manda el ERP.
  */
 function transformProduct(p: ShopifyProduct) {
   // La API pública de Shopify no refleja el stock real de Dropi.
@@ -93,16 +85,25 @@ function transformProduct(p: ShopifyProduct) {
     precio:              calcPrecio(p.variants),
     fotos_tienda:        p.images.map((img) => img.src),
     disponible,
-    condicion:           'nuevo' as const,
+    condicion:           'nuevo',
     especificaciones:    buildEspecificaciones(p.options),
     categoria:           'Zona Tech',
     codigo:              null,
     vendor:              p.vendor || null,
-    synced_at:           new Date().toISOString(),
-    // visible_tienda se omite intencionalmente:
-    // - productos nuevos toman el DEFAULT (true) de la tabla
-    // - productos existentes conservan el toggle que el usuario haya puesto en el ERP
   };
+}
+
+/** Todas las páginas de /products.json */
+async function fetchAllProducts(): Promise<ShopifyProduct[]> {
+  const all: ShopifyProduct[] = [];
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const res = await fetch(`${SHOPIFY_PRODUCTS_URL}?limit=${PAGE_SIZE}&page=${page}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Shopify respondió ${res.status}`);
+    const { products = [] } = (await res.json()) as { products?: ShopifyProduct[] };
+    all.push(...products);
+    if (products.length < PAGE_SIZE) return all;
+  }
+  throw new Error(`Más de ${MAX_PAGES * PAGE_SIZE} productos en Shopify — subir MAX_PAGES`);
 }
 
 // ── CORS headers ──────────────────────────────────────────────────────────────
@@ -121,78 +122,49 @@ export async function OPTIONS() {
 
 export async function GET(req: NextRequest) {
   // Verificar autorización
+  const secret = process.env.SHOPIFY_SYNC_SECRET;
   const authHeader = req.headers.get('authorization') ?? '';
-  const expectedToken = `Bearer ${process.env.SHOPIFY_SYNC_SECRET}`;
 
-  if (!process.env.SHOPIFY_SYNC_SECRET || authHeader !== expectedToken) {
+  if (!secret || authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: CORS_HEADERS });
   }
 
-  // Fetch productos desde Shopify (API pública, sin auth)
-  let shopifyData: ShopifyResponse;
+  let products: ShopifyProduct[];
   try {
-    const res = await fetch(SHOPIFY_PRODUCTS_URL, {
-      headers: { 'Content-Type': 'application/json' },
-      next: { revalidate: 0 }, // no cachear en Next.js
-    });
-
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: `Shopify respondió ${res.status}` },
-        { status: 502, headers: CORS_HEADERS }
-      );
-    }
-
-    shopifyData = (await res.json()) as ShopifyResponse;
+    products = await fetchAllProducts();
   } catch (err) {
     console.error('[ByteX/sync] Error fetching Shopify:', err);
     return NextResponse.json(
-      { error: 'Error al conectar con Shopify' },
+      { error: err instanceof Error ? err.message : 'Error al conectar con Shopify' },
       { status: 502, headers: CORS_HEADERS }
     );
   }
 
-  const products = shopifyData.products ?? [];
-
+  // Lista vacía = probablemente un fallo de Shopify: no marcar todo como retirado
   if (products.length === 0) {
-    return NextResponse.json({ synced: 0, errors: [] }, { headers: CORS_HEADERS });
+    return NextResponse.json({ total_shopify: 0, synced: 0, errors: [] }, { headers: CORS_HEADERS });
   }
 
-  // Obtener blocklist para ignorar productos eliminados manualmente
-  const { data: blocklist } = await supabase
-    .from('dropi_blocklist')
-    .select('shopify_id');
-  // Comparar como strings para evitar problemas de tipo con BIGINT de Supabase
-  const blockedIds = new Set((blocklist ?? []).map((r: { shopify_id: number }) => String(r.shopify_id)));
+  // La escritura la hace sync_productos_dropi (SECURITY DEFINER): productos_dropi
+  // y dropi_blocklist no son escribibles con la anon key. El secreto es la autorización.
+  const { data, error } = await supabase.rpc('sync_productos_dropi', {
+    p_secret: secret,
+    p_items:  products.map(transformProduct),
+  });
 
-  // Filtrar productos bloqueados
-  const filteredProducts = products.filter(p => !blockedIds.has(String(p.id)));
-  const blockedCount = products.length - filteredProducts.length;
-
-  // Transformar y hacer upsert por lotes de 50
-  const errors: string[] = [];
-  let synced = 0;
-  const BATCH_SIZE = 50;
-
-  for (let i = 0; i < filteredProducts.length; i += BATCH_SIZE) {
-    const batch = filteredProducts.slice(i, i + BATCH_SIZE).map(transformProduct);
-
-    const { error } = await supabase
-      .from('productos_dropi')
-      .upsert(batch, { onConflict: 'id' });
-
-    if (error) {
-      console.error('[ByteX/sync] Upsert error:', error.message);
-      errors.push(error.message);
-    } else {
-      synced += batch.length;
-    }
+  if (error) {
+    console.error('[ByteX/sync] RPC error:', error.message);
+    return NextResponse.json(
+      { total_shopify: products.length, synced: 0, errors: [error.message] },
+      { status: 500, headers: CORS_HEADERS }
+    );
   }
 
   return NextResponse.json({
     total_shopify: products.length,
-    blocked:       blockedCount,
-    synced,
-    errors,
+    blocked:       data.blocked,
+    synced:        data.synced,
+    retirados:     data.retirados,
+    errors:        [],
   }, { headers: CORS_HEADERS });
 }

@@ -1,6 +1,9 @@
 import { MetadataRoute } from "next";
 import { getProducts } from "@/lib/supabase";
 
+// Lista de productos actualizada cada hora
+export const revalidate = 3600;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bytexstore.es";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -15,11 +18,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${BASE_URL}/catalogo`,
       changeFrequency: "daily",
       priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/carrito`,
-      changeFrequency: "monthly",
-      priority: 0.3,
     },
     {
       url: `${BASE_URL}/privacidad`,

@@ -2,17 +2,18 @@
 import { X, Trash2, ShoppingBag, Plus, Minus, Send, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/lib/cart-store";
+import { useCart, maxQuantity } from "@/lib/cart-store";
 import { useState, useEffect } from "react";
 
 const BLANK = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect fill='%23F4F4F5' width='60' height='60'/%3E%3C/svg%3E`;
 
 export default function CartDrawer() {
-  const { items, isOpen, closeCart, removeItem, updateQuantity, total, itemCount } = useCart();
+  const { items: storedItems, isOpen, closeCart, removeItem, updateQuantity, total, itemCount } = useCart();
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
   const count    = mounted ? itemCount() : 0;
   const totalVal = mounted ? total()     : 0;
+  const items    = mounted ? storedItems : [];
 
   return (
     <>
@@ -177,11 +178,15 @@ export default function CartDrawer() {
                       </span>
                       <button
                         onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                        disabled={item.quantity >= maxQuantity(item.product)}
+                        title={item.quantity >= maxQuantity(item.product) ? "No hay más unidades disponibles" : undefined}
                         style={{
                           width: 24, height: 24, borderRadius: 4,
                           background: "var(--surface)",
                           border: "1px solid var(--border)",
-                          color: "var(--text-3)", cursor: "pointer",
+                          color: "var(--text-3)",
+                          cursor: item.quantity >= maxQuantity(item.product) ? "not-allowed" : "pointer",
+                          opacity: item.quantity >= maxQuantity(item.product) ? 0.4 : 1,
                           display: "flex", alignItems: "center", justifyContent: "center",
                           transition: "border-color 0.15s",
                         }}

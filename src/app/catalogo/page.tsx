@@ -1,10 +1,8 @@
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import { getProducts } from "@/lib/supabase";
 import CatalogoClient from "./CatalogoClient";
+import type { Product } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Catálogo de Equipos",
@@ -23,7 +21,7 @@ export default async function CatalogoPage({
   const initialCat = params.cat || "todos";
   const initialQ   = params.q  || "";
 
-  let allProducts: any[] = [];
+  let allProducts: Product[] = [];
   try {
     allProducts = await getProducts(); // todos, sin filtro
   } catch {
@@ -32,7 +30,9 @@ export default async function CatalogoPage({
 
   return (
     <>
+      {/* key: si cambia ?cat o ?q estando ya en /catalogo, los filtros se reinician con la URL */}
       <CatalogoClient
+        key={`${initialCat}|${initialQ}`}
         allProducts={allProducts}
         initialCat={initialCat}
         initialQ={initialQ}

@@ -1,22 +1,12 @@
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Se regenera cada minuto: los cambios del ERP tardan como máximo 60 s en verse
+export const revalidate = 60;
 
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { getProducts } from "@/lib/supabase";
+import type { Product } from "@/lib/types";
 import { ArrowRight } from "lucide-react";
-
-const MOCK_PRODUCTS = [
-  { id:"1", nombre:"Laptop HP ProBook 450 G8", descripcion_publica:"Intel Core i5 11va gen", precio:520, fotos_tienda:[], condicion:"segunda" as const, especificaciones:{RAM:"8GB",CPU:"i5-11",Disco:"SSD 256GB"}, categoria:"Laptops", stock:2, codigo:"LAP-001", es_servicio: false },
-  { id:"2", nombre:"Dell Latitude 5510 Core i7", descripcion_publica:"Empresarial Full HD", precio:680, fotos_tienda:[], condicion:"reacondicionado" as const, especificaciones:{RAM:"16GB",CPU:"i7-10",Disco:"SSD 512GB"}, categoria:"Laptops", stock:1, codigo:"LAP-002", es_servicio: false },
-  { id:"3", nombre:"PC Lenovo ThinkCentre M720", descripcion_publica:"Escritorio empresarial", precio:380, fotos_tienda:[], condicion:"segunda" as const, especificaciones:{RAM:"8GB",CPU:"i5-8",Disco:"HDD 500GB"}, categoria:"PCs", stock:3, codigo:"PC-001", es_servicio: false },
-  { id:"4", nombre:"Impresora Epson L3150 WiFi", descripcion_publica:"Sistema tanque, multifunción", precio:195, fotos_tienda:[], condicion:"segunda" as const, especificaciones:{Tipo:"Multifunción",WiFi:"Sí"}, categoria:"Impresoras", stock:2, codigo:"IMP-001", es_servicio: false },
-  { id:"5", nombre:"Laptop Asus VivoBook 15", descripcion_publica:"Ryzen 5, ideal estudiantes", precio:440, fotos_tienda:[], condicion:"segunda" as const, especificaciones:{RAM:"8GB",CPU:"Ryzen 5",Disco:"SSD 256GB"}, categoria:"Laptops", stock:1, codigo:"LAP-003", es_servicio: false },
-  { id:"6", nombre:'Monitor Samsung 24" Full HD', descripcion_publica:"Panel IPS, bordes delgados", precio:155, fotos_tienda:[], condicion:"segunda" as const, especificaciones:{Tamaño:'24"',Panel:"IPS"}, categoria:"Monitores", stock:4, codigo:"MON-001", es_servicio: false },
-  { id:"7", nombre:"HP EliteBook 840 G6", descripcion_publica:"Ultrabook empresarial Core i7", precio:750, fotos_tienda:[], condicion:"reacondicionado" as const, especificaciones:{RAM:"16GB",CPU:"i7-8",Disco:"SSD 512GB"}, categoria:"Laptops", stock:1, codigo:"LAP-004", es_servicio: false },
-  { id:"8", nombre:"Impresora HP LaserJet M15a", descripcion_publica:"Láser monocromática compacta", precio:145, fotos_tienda:[], condicion:"segunda" as const, especificaciones:{Tipo:"Láser",Color:"Mono"}, categoria:"Impresoras", stock:3, codigo:"IMP-002", es_servicio: false },
-];
 
 const CAT_CARDS = [
   { id:"laptop",    label:"Laptops",         desc:"Portátiles empresariales",   icon:"💻" },
@@ -28,9 +18,9 @@ const CAT_CARDS = [
 ];
 
 export default async function Home() {
-  let products: any[] = [];
+  let products: Product[] = [];
   try { products = await getProducts(); } catch {}
-  const display = products.length > 0 ? products.slice(0, 8) : MOCK_PRODUCTS;
+  const display = products.slice(0, 8);
 
   const waNum = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const waUrl = `https://wa.me/${waNum}?text=${encodeURIComponent("Hola, quiero consultar sobre los equipos disponibles")}`;
@@ -85,15 +75,21 @@ export default async function Home() {
             <div className="section-header">
               <div>
                 <h2 className="section-title" style={{ marginBottom: 2 }}>Equipos disponibles</h2>
-                <p className="section-count">{display.length} equipos en catálogo</p>
+                <p className="section-count">{products.length} equipo{products.length !== 1 ? "s" : ""} en catálogo</p>
               </div>
               <Link href="/catalogo" className="section-link">
                 Ver todo <ArrowRight size={14} />
               </Link>
             </div>
-            <div className="products-grid">
-              {display.map(p => <ProductCard key={p.id} product={p} />)}
-            </div>
+            {display.length > 0 ? (
+              <div className="products-grid">
+                {display.map(p => <ProductCard key={p.id} product={p} />)}
+              </div>
+            ) : (
+              <p className="section-count" style={{ padding: "32px 0", textAlign: "center" }}>
+                Estamos actualizando el catálogo. Escríbenos por WhatsApp y te ayudamos a encontrar tu equipo.
+              </p>
+            )}
           </div>
         </section>
 

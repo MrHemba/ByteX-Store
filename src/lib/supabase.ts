@@ -19,69 +19,42 @@ function sortSpecs(obj: Record<string, string>): Record<string, string> {
   return Object.fromEntries(Object.entries(obj).sort(([a], [b]) => rank(a) - rank(b)));
 }
 
-/** Parsea especificaciones sin importar si llega como objeto o como string JSON */
-function parseEspecificaciones(raw: unknown): Record<string, string> {
-  if (!raw) return {};
-  if (typeof raw === 'object' && !Array.isArray(raw)) return sortSpecs(raw as Record<string, string>);
-  if (typeof raw === 'string') {
-    try { return sortSpecs(JSON.parse(raw)); } catch { return {}; }
-  }
-  return {};
+/** Valores como texto: Dropi guarda las opciones de Shopify como arrays (["S","M","L"]) */
+function specValue(v: unknown): string {
+  if (Array.isArray(v)) return v.map(String).join(', ');
+  if (v === null || v === undefined) return '';
+  return typeof v === 'object' ? JSON.stringify(v) : String(v);
 }
 
-export async function getProducts(categoria?: string): Promise<Product[]> {
-  // ── Productos normales ────────────────────────────────────────────────────
-  let prodQuery = supabase
-    .from('productos')
-    .select(`
-      id, nombre, descripcion_publica,
-      precio_unitario, fotos_tienda, condicion,
-      especificaciones, categoria, codigo_principal, stock, es_servicio
-    `)
-    .eq('visible_tienda', true)
-    .eq('active', true)
-    .order('created_at', { ascending: false });
-
-  if (categoria && categoria !== 'todos') {
-    prodQuery = prodQuery.ilike('categoria', `%${categoria}%`);
+/** Parsea especificaciones sin importar si llega como objeto o como string JSON */
+function parseEspecificaciones(raw: unknown): Record<string, string> {
+  let obj: unknown = raw;
+  if (typeof raw === 'string') {
+    try { obj = JSON.parse(raw); } catch { return {}; }
   }
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return {};
+  const entries = Object.entries(obj as Record<string, unknown>)
+    .map(([k, v]) => [k, specValue(v)] as const)
+    .filter(([, v]) => v !== '');
+  return sortSpecs(Object.fromEntries(entries));
+}
 
-  // ── Equipos compraventa ───────────────────────────────────────────────────
-  let equipQuery = supabase
-    .from('equipos_compraventa')
-    .select(`id, tipo, marca, modelo, descripcion_publica, precio_tienda, fotos_tienda, condicion, categoria`)
-    .eq('visible_tienda', true)
-    .neq('estado', 'vendido');
+/** Dropi gestiona el stock real; este valor centinela = "disponible" sin alertas de "último" */
+export const DROPI_STOCK = 99;
 
-  if (categoria && categoria !== 'todos') {
-    equipQuery = equipQuery.ilike('categoria', `%${categoria}%`);
-  }
+// ── Mapeo de cada fuente al tipo Product ──────────────────────────────────────
 
-  // ── Productos Dropi (Shopify) ─────────────────────────────────────────────
-  let dropiQuery = supabase
-    .from('productos_dropi')
-    .select(`id, nombre, descripcion_publica, precio, fotos_tienda, condicion, especificaciones, categoria, codigo, vendor, disponible`)
-    .eq('visible_tienda', true);
+const PRODUCTO_COLS = `id, nombre, descripcion_publica, precio_unitario, fotos_tienda, condicion,
+  especificaciones, categoria, codigo_principal, stock, es_servicio`;
+const EQUIPO_COLS   = `id, tipo, marca, modelo, descripcion_publica, precio_tienda, fotos_tienda, condicion, categoria`;
+const DROPI_COLS    = `id, nombre, descripcion_publica, precio, fotos_tienda, condicion, especificaciones, categoria, codigo, disponible`;
 
-  if (categoria && categoria !== 'todos') {
-    dropiQuery = dropiQuery.ilike('categoria', `%${categoria}%`);
-  }
-
-  const [{ data: prods, error: e1 }, { data: equips, error: e2 }, { data: dropi, error: e3 }] = await Promise.all([
-    prodQuery,
-    equipQuery,
-    dropiQuery,
-  ]);
-
-  if (e1) console.error('[ByteX] Error productos:', e1.message);
-  if (e2) console.error('[ByteX] Error equipos:', e2.message);
-  if (e3) console.error('[ByteX] Error productos_dropi:', e3.message);
-
-  const prodMapped: Product[] = (prods || []).map((p: any) => ({
+function mapProducto(p: any): Product {
+  return {
     id:                  String(p.id),
     nombre:              p.nombre,
     descripcion_publica: p.descripcion_publica,
-    precio:              p.precio_unitario,
+    precio:              p.precio_unitario           ?? 0,
     fotos_tienda:        p.fotos_tienda              || [],
     condicion:           p.condicion                 || 'nuevo',
     especificaciones:    parseEspecificaciones(p.especificaciones),
@@ -89,9 +62,11 @@ export async function getProducts(categoria?: string): Promise<Product[]> {
     codigo:              p.codigo_principal,
     stock:               p.stock                     ?? 0,
     es_servicio:         p.es_servicio               ?? false,
-  }));
+  };
+}
 
-  const equipMapped: Product[] = (equips || []).map((e: any) => ({
+function mapEquipo(e: any): Product {
+  return {
     id:                  `eq_${e.id}`,
     nombre:              [e.tipo, e.marca, e.modelo].filter(Boolean).join(' '),
     descripcion_publica: e.descripcion_publica,
@@ -103,9 +78,11 @@ export async function getProducts(categoria?: string): Promise<Product[]> {
     codigo:              null,
     stock:               1,
     es_servicio:         false,
-  }));
+  };
+}
 
-  const dropiMapped: Product[] = (dropi || []).map((d: any) => ({
+function mapDropi(d: any): Product {
+  return {
     id:                  d.id,                           // ya tiene formato dropi_X
     nombre:              d.nombre,
     descripcion_publica: d.descripcion_publica,
@@ -115,103 +92,79 @@ export async function getProducts(categoria?: string): Promise<Product[]> {
     especificaciones:    parseEspecificaciones(d.especificaciones),
     categoria:           d.categoria            || '',
     codigo:              d.codigo               ?? null,
-    stock:               d.disponible ? 99 : 0,  // Dropi gestiona el stock real; 99 = disponible sin alerta de "último"
+    stock:               d.disponible ? DROPI_STOCK : 0,
     es_servicio:         false,
-  }));
+  };
+}
 
-  return [...prodMapped, ...equipMapped, ...dropiMapped];
+export async function getProducts(): Promise<Product[]> {
+  const [{ data: prods, error: e1 }, { data: equips, error: e2 }, { data: dropi, error: e3 }] = await Promise.all([
+    supabase.from('productos').select(PRODUCTO_COLS)
+      .eq('visible_tienda', true).eq('active', true)
+      .order('created_at', { ascending: false }),
+    supabase.from('equipos_compraventa').select(EQUIPO_COLS)
+      .eq('visible_tienda', true).neq('estado', 'vendido'),
+    // disponible = false → el producto ya no existe en Shopify
+    supabase.from('productos_dropi').select(DROPI_COLS)
+      .eq('visible_tienda', true).eq('disponible', true),
+  ]);
+
+  if (e1) console.error('[ByteX] Error productos:', e1.message);
+  if (e2) console.error('[ByteX] Error equipos:', e2.message);
+  if (e3) console.error('[ByteX] Error productos_dropi:', e3.message);
+
+  return [
+    ...(prods  || []).map(mapProducto),
+    ...(equips || []).map(mapEquipo),
+    ...(dropi  || []).map(mapDropi),
+  ];
 }
 
 export async function getProductBySlug(id: string): Promise<Product | null> {
   // Productos Dropi tienen ID con prefijo "dropi_"
   if (id.startsWith('dropi_')) {
     const { data, error } = await supabase
-      .from('productos_dropi')
-      .select(`id, nombre, descripcion_publica, precio, fotos_tienda, condicion, especificaciones, categoria, codigo, vendor, disponible`)
-      .eq('id', id)
-      .eq('visible_tienda', true)
-      .single();
-
-    if (error || !data) {
-      console.error('[ByteX] Error cargando producto dropi:', error?.message);
-      return null;
-    }
-
-    return {
-      id:                  data.id,
-      nombre:              data.nombre,
-      descripcion_publica: data.descripcion_publica,
-      precio:              data.precio              ?? 0,
-      fotos_tienda:        data.fotos_tienda        || [],
-      condicion:           (data.condicion === 'nueva' ? 'nuevo' : data.condicion) || 'nuevo',
-      especificaciones:    parseEspecificaciones(data.especificaciones),
-      categoria:           data.categoria           || '',
-      codigo:              data.codigo              ?? null,
-      stock:               data.disponible ? 99 : 0,
-      es_servicio:         false,
-    } as Product;
+      .from('productos_dropi').select(DROPI_COLS)
+      .eq('id', id).eq('visible_tienda', true).eq('disponible', true)
+      .maybeSingle();
+    if (error) throw new Error(`[ByteX] Error cargando producto dropi: ${error.message}`);
+    return data ? mapDropi(data) : null;
   }
 
   // Equipos compraventa tienen ID con prefijo "eq_"
   if (id.startsWith('eq_')) {
-    const equipoId = id.replace('eq_', '');
+    const equipoId = Number(id.slice(3));
+    if (!Number.isInteger(equipoId)) return null;
     const { data, error } = await supabase
-      .from('equipos_compraventa')
-      .select(`id, tipo, marca, modelo, descripcion_publica, precio_tienda, fotos_tienda, condicion, categoria`)
-      .eq('id', equipoId)
-      .eq('visible_tienda', true)
-      .neq('estado', 'vendido')
-      .single();
-
-    if (error || !data) {
-      console.error('[ByteX] Error cargando equipo:', error?.message);
-      return null;
-    }
-
-    return {
-      id:                  `eq_${data.id}`,
-      nombre:              [data.tipo, data.marca, data.modelo].filter(Boolean).join(' '),
-      descripcion_publica: data.descripcion_publica,
-      precio:              data.precio_tienda,
-      fotos_tienda:        data.fotos_tienda        || [],
-      condicion:           data.condicion           || 'segunda',
-      especificaciones:    {},
-      categoria:           data.categoria           || '',
-      codigo:              null,
-      stock:               1,
-    } as Product;
+      .from('equipos_compraventa').select(EQUIPO_COLS)
+      .eq('id', equipoId).eq('visible_tienda', true).neq('estado', 'vendido')
+      .maybeSingle();
+    if (error) throw new Error(`[ByteX] Error cargando equipo: ${error.message}`);
+    return data ? mapEquipo(data) : null;
   }
 
   // Producto normal
+  const productoId = Number(id);
+  if (!Number.isInteger(productoId)) return null;
   const { data, error } = await supabase
-    .from('productos')
-    .select(`
-      id, nombre, descripcion_publica,
-      precio_unitario, fotos_tienda, condicion,
-      especificaciones, categoria, codigo_principal, stock, es_servicio
-    `)
-    .eq('id', id)
-    .eq('visible_tienda', true)
-    .single();
+    .from('productos').select(PRODUCTO_COLS)
+    .eq('id', productoId).eq('visible_tienda', true).eq('active', true)
+    .maybeSingle();
+  if (error) throw new Error(`[ByteX] Error cargando producto: ${error.message}`);
+  return data ? mapProducto(data) : null;
+}
 
-  if (error || !data) {
-    console.error('[ByteX] Error cargando producto:', error?.message);
-    return null;
-  }
-
-  return {
-    id:                  String(data.id),
-    nombre:              data.nombre,
-    descripcion_publica: data.descripcion_publica,
-    precio:              data.precio_unitario,
-    fotos_tienda:        data.fotos_tienda              || [],
-    condicion:           data.condicion                 || 'nuevo',
-    especificaciones:    parseEspecificaciones(data.especificaciones),
-    categoria:           data.categoria                 || '',
-    codigo:              data.codigo_principal,
-    stock:               data.stock                     ?? 0,
-    es_servicio:         data.es_servicio               ?? false,
-  } as Product;
+/**
+ * Versión actual de los productos del carrito.
+ * null = ya no está publicado; los ids que fallaron por red no aparecen en el resultado.
+ */
+export async function getProductsByIds(ids: string[]): Promise<Record<string, Product | null>> {
+  const results = await Promise.allSettled(ids.map((id) => getProductBySlug(id)));
+  const out: Record<string, Product | null> = {};
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') out[ids[i]] = r.value;
+  });
+  return out;
 }
 
 export async function createCotizacion(payload: {
@@ -224,44 +177,50 @@ export async function createCotizacion(payload: {
   items: Array<{
     producto_id: string;
     nombre_producto: string;
+    codigo_producto: string | null;
     precio_unitario: number;
     precio_final: number;
     cantidad: number;
     subtotal: number;
   }>;
-}) {
-  const { data: cotizacion, error } = await supabase
+}): Promise<boolean> {
+  // El id se genera aquí: la tienda no tiene permiso de lectura sobre cotizaciones_web
+  const cotizacionId = crypto.randomUUID();
+
+  const { error } = await supabase
     .from('cotizaciones_web')
     .insert({
-      cliente_nombre: payload.cliente_nombre,
+      id:               cotizacionId,
+      cliente_nombre:   payload.cliente_nombre,
       cliente_whatsapp: payload.cliente_whatsapp,
-      cliente_email: payload.cliente_email,
-      notas_cliente: payload.notas_cliente,
-      subtotal: payload.subtotal,
-      total: payload.total,
-      origen: 'tienda_web',
-    })
-    .select()
-    .single();
+      cliente_email:    payload.cliente_email || null,
+      notas_cliente:    payload.notas_cliente || null,
+      subtotal:         payload.subtotal,
+      total:            payload.total,
+      origen:           'tienda_web',
+    });
 
-  if (error || !cotizacion) {
-    console.error('[ByteX] Error insertando cotizacion_web:', error?.message, error?.code, error?.details);
-    return null;
+  if (error) {
+    console.error('[ByteX] Error insertando cotizacion_web:', error.message, error.code, error.details);
+    return false;
   }
 
   const detalles = payload.items.map((item) => ({
-    cotizacion_id:   cotizacion.id,
+    cotizacion_id:   cotizacionId,
     // Los equipos (eq_N) y productos Dropi (dropi_N) no tienen FK en producto_id
-    producto_id:     (String(item.producto_id).startsWith('eq_') || String(item.producto_id).startsWith('dropi_'))
-                       ? null
-                       : Number(item.producto_id),
+    producto_id:     /^\d+$/.test(item.producto_id) ? Number(item.producto_id) : null,
     nombre_producto: item.nombre_producto,
+    codigo_producto: item.codigo_producto,
     precio_original: item.precio_unitario,
     precio_final:    item.precio_final,
     cantidad:        item.cantidad,
     subtotal:        item.subtotal,
   }));
 
-  await supabase.from('cotizaciones_web_detalle').insert(detalles);
-  return cotizacion;
+  const { error: detError } = await supabase.from('cotizaciones_web_detalle').insert(detalles);
+  if (detError) {
+    console.error('[ByteX] Error insertando cotizaciones_web_detalle:', detError.message, detError.code);
+    return false;
+  }
+  return true;
 }

@@ -10,7 +10,6 @@ import ThemeToggle from "./ThemeToggle";
 const NAV = [
   { href: "/",           label: "Inicio" },
   { href: "/catalogo",   label: "Catálogo" },
-  { href: "/catalogo?oferta=true", label: "Ofertas" },
   { href: `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`, label: "Soporte", external: true },
 ];
 

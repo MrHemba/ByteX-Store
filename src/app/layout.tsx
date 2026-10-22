@@ -116,8 +116,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" data-theme="light" className={`${spaceGrotesk.variable} ${dmSans.variable}`}>
+    // suppressHydrationWarning: el script de abajo puede cambiar data-theme antes de hidratar
+    <html lang="es" data-theme="light" className={`${spaceGrotesk.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <head>
+        {/* Aplica el tema guardado antes del primer pintado (evita el destello claro → oscuro) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem("theme")==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}`,
+          }}
+        />
         {/* JSON-LD — datos estructurados para Google */}
         <script
           type="application/ld+json"

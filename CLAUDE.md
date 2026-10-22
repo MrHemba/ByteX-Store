@@ -2,7 +2,7 @@
 
 ## Qué es este proyecto
 
-Tienda e-commerce Next.js 15 (App Router, TypeScript) conectada a la misma Supabase del ERP FacturGamer. Vende laptops, PCs, impresoras y accesorios de segunda mano bajo la marca **ByteX Store — una tienda de H&G Solutions**. La administración se hace desde el módulo "Tienda Online" del ERP.
+Tienda e-commerce Next.js 16 (App Router, TypeScript) conectada a la misma Supabase del ERP FacturGamer. Vende laptops, PCs, impresoras y accesorios de segunda mano bajo la marca **ByteX Store — una tienda de H&G Solutions**. La administración se hace desde el módulo "Tienda Online" del ERP.
 
 Supabase project ref: `mixtsrczbovsyumrofso`
 
@@ -23,9 +23,11 @@ src/
     ProductCard.tsx               # Card con badge condición + add to cart
     CartDrawer.tsx                # Drawer lateral del carrito
   lib/
-    supabase.ts                   # getProducts, getProductBySlug, createCotizacion
+    supabase.ts                   # getProducts, getProductBySlug, getProductsByIds, createCotizacion
     types.ts                      # Product, CartItem
-    cart-store.ts                 # Zustand (persistido en localStorage)
+    cart-store.ts                 # Zustand (persistido en localStorage) + maxQuantity
+    migrations/                   # SQL para ejecutar en Supabase
+  app/api/shopify/sync/route.ts   # Sync Shopify → productos_dropi (lo llama el ERP)
 public/
   logo.png                        # Logo principal (PNG transparente) — favicon
   logo-principal.jpg              # Para OG/Twitter cards
@@ -46,12 +48,29 @@ public/
 | `especificaciones`  | `especificaciones`    |
 | `stock`             | `stock`               |
 
-## Fuentes de productos (dos tablas)
+## Fuentes de productos (tres tablas)
 
 1. `productos` donde `visible_tienda = true AND active = true` → IDs normales (ej: `"123"`)
 2. `equipos_compraventa` donde `visible_tienda = true AND estado != 'vendido'` → IDs con prefijo `eq_` (ej: `"eq_45"`)
+3. `productos_dropi` donde `visible_tienda = true AND disponible = true` → IDs con prefijo `dropi_`
 
-Ambas mapeadas al tipo `Product`. Los equipos siempre tienen `es_servicio: false` y `stock: 1`.
+Todas mapeadas al tipo `Product`. Los equipos siempre tienen `es_servicio: false` y `stock: 1`.
+Dropi usa `stock: 99` (`DROPI_STOCK`) como centinela de "disponible": Shopify no da cantidades reales.
+
+## Carrito
+
+- El carrito guarda el producto completo en localStorage. `/carrito` lo refresca al entrar
+  (`getProductsByIds` + `refreshProducts`): precios nuevos, quita lo que ya no está publicado.
+- La cantidad está limitada por `maxQuantity()` (stock; 99 para servicios).
+
+## Seguridad (RLS)
+
+- La anon key es pública. `cotizaciones_web` / `_detalle`: la tienda solo INSERTA (sin SELECT);
+  por eso el UUID de la cotización se genera en el cliente con `crypto.randomUUID()`.
+- `productos_dropi`: lectura pública de lo visible; la escritura solo vía la función
+  `sync_productos_dropi(secret, items)` (SECURITY DEFINER, valida el SHA-256 de `SHOPIFY_SYNC_SECRET`
+  guardado en `private.app_config`). Si cambia el secreto en Vercel, actualizar ese hash.
+- El sync no sobrescribe `visible_tienda`, `categoria` ni `condicion` (los administra el ERP).
 
 ## Servicios (`es_servicio = true`)
 
@@ -67,9 +86,10 @@ Ambas mapeadas al tipo `Product`. Los equipos siempre tienen `es_servicio: false
 
 1. Cliente agrega al carrito → Zustand + localStorage
 2. `/carrito` — 3 pasos: resumen → datos de contacto → confirmación
-3. Al confirmar: `createCotizacion()` en `supabase.ts` → INSERT en `cotizaciones_web` + `cotizaciones_web_detalle`
+3. Al confirmar: `createCotizacion()` en `supabase.ts` → INSERT en `cotizaciones_web` + `cotizaciones_web_detalle`.
+   Solo si se guardó se abre WhatsApp y se vacía el carrito; si falla se muestra el error.
 4. Trigger automático en Supabase crea notificación en ERP
-5. Equipos compraventa: `producto_id = null` en detalle (solo guardan `nombre_producto`)
+5. Equipos compraventa y Dropi: `producto_id = null` en detalle (solo guardan `nombre_producto`)
 
 ## Tabla `cotizaciones_web`
 

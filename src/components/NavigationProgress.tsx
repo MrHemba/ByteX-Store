@@ -90,9 +90,9 @@ export default function NavigationProgress() {
         style={{
           height: "100%",
           width: `${width}%`,
-          background: "linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%)",
+          background: "linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%)",
           borderRadius: "0 2px 2px 0",
-          boxShadow: "0 0 12px var(--accent-glow), 0 0 4px var(--accent)",
+          boxShadow: "0 0 12px var(--accent-mid), 0 0 4px var(--accent)",
           transition:
             state === "done"
               ? "width 0.22s ease, opacity 0.35s ease 0.2s"
