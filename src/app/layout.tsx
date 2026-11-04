@@ -42,7 +42,7 @@ const jsonLd = {
         "width": 1536,
         "height": 836,
       },
-      "description": "Tienda especializada en equipos tecnológicos de segunda mano y reacondicionados en Ecuador. Laptops, PCs, impresoras y accesorios con garantía.",
+      "description": "Tienda de tecnología en Ecuador: laptops, PCs, impresoras, monitores y accesorios nuevos con garantía, y también equipos reacondicionados y de segunda mano.",
       "address": {
         "@type": "PostalAddress",
         "addressCountry": "EC",
@@ -59,7 +59,7 @@ const jsonLd = {
       "@id": `${BASE_URL}/#website`,
       "url": BASE_URL,
       "name": "ByteX Store",
-      "description": "Laptops, PCs, impresoras y accesorios de segunda mano revisados con garantía. Equipos tecnológicos de calidad en Ecuador.",
+      "description": "Laptops, PCs, impresoras, monitores y accesorios nuevos con garantía en Ecuador. También equipos reacondicionados y de segunda mano revisados.",
       "publisher": { "@id": `${BASE_URL}/#organization` },
       "potentialAction": {
         "@type": "SearchAction",
@@ -77,26 +77,26 @@ const jsonLd = {
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "ByteX Store | Laptops, PCs e Impresoras de Segunda Mano en Ecuador",
+    default: "ByteX Store | Laptops, PCs e Impresoras Nuevas con Garantía en Ecuador",
     template: "%s | ByteX Store",
   },
   description:
-    "Compra laptops, PCs, impresoras y accesorios de segunda mano revisados y con garantía en Ecuador. Equipos HP, Dell, Lenovo y más — H&G Solutions.",
-  keywords: "laptops segunda mano ecuador, computadoras usadas quito, impresoras reacondicionadas, equipos tecnologicos garantia, bytex store, hp dell lenovo segunda mano",
+    "Compra laptops, PCs, impresoras, monitores y accesorios nuevos con garantía en Ecuador. Cotiza gratis por WhatsApp. HP, Dell, Lenovo y más — H&G Solutions.",
+  keywords: "laptops ecuador, computadoras ecuador, impresoras ecuador, monitores, componentes pc, equipos tecnologicos garantia, bytex store, hp dell lenovo asus, laptops reacondicionadas",
   authors: [{ name: "H&G Solutions", url: BASE_URL }],
   category: "technology",
   openGraph: {
-    title:       "ByteX Store | Laptops y PCs de Segunda Mano con Garantía",
+    title:       "ByteX Store | Laptops, PCs e Impresoras Nuevas con Garantía",
     description: "Laptops, PCs, impresoras y accesorios revisados con garantía en Ecuador. Equipos HP, Dell, Lenovo — H&G Solutions.",
     type:        "website",
     url:         BASE_URL,
     siteName:    "ByteX Store",
     locale:      "es_EC",
-    images: [{ url: "/logo-principal.jpg", width: 1536, height: 836, alt: "ByteX Store — Tecnología de Segunda Mano en Ecuador" }],
+    images: [{ url: "/logo-principal.jpg", width: 1536, height: 836, alt: "ByteX Store — Tecnología con garantía en Ecuador" }],
   },
   twitter: {
     card:        "summary_large_image",
-    title:       "ByteX Store | Laptops y PCs de Segunda Mano",
+    title:       "ByteX Store | Laptops, PCs e Impresoras Nuevas con Garantía",
     description: "Equipos tecnológicos revisados con garantía en Ecuador.",
     images:      ["/logo-principal.jpg"],
   },

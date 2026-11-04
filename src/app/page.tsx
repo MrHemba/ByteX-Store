@@ -77,9 +77,9 @@ export default async function Home() {
         <section className="hero-section">
           <div className={`hero-container${heroPicks.length ? "" : " hero-container--solo"}`}>
             <div className="hero-copy">
-              <h1 className="hero-h1">Tecnología revisada e importada directo para ti.</h1>
+              <h1 className="hero-h1">Tecnología con garantía, directo para ti.</h1>
               <p className="hero-sub">
-                Laptops, PCs e impresoras de segunda mano con garantía — y componentes y accesorios nuevos para tu equipo.
+                Laptops, PCs, impresoras, componentes y accesorios nuevos con garantía — cotiza gratis por WhatsApp.
               </p>
               <div className="hero-ctas">
                 <Link href="/catalogo" className="btn-primary hero-cta-primary">

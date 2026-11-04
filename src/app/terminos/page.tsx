@@ -4,7 +4,7 @@ import { FileText, ChevronRight } from "lucide-react";
 
 export const metadata = {
   title: "Términos y Condiciones — ByteX Store",
-  description: "Términos y condiciones de uso de ByteX Store, tienda de tecnología de segunda mano de H&G Solutions Ecuador.",
+  description: "Términos y condiciones de uso de ByteX Store, tienda de tecnología de H&G Solutions Ecuador.",
 };
 
 const LAST_UPDATED = "17 de septiembre de 2025";
@@ -53,8 +53,8 @@ export default function TerminosPage() {
 
             <Section title="2. Descripción del servicio">
               <p>
-                ByteX Store es una tienda en línea que ofrece equipos tecnológicos de segunda mano y
-                reacondicionados (laptops, PCs, impresoras, monitores y accesorios), así como servicios
+                ByteX Store es una tienda en línea que ofrece equipos tecnológicos nuevos, reacondicionados y
+                de segunda mano (laptops, PCs, impresoras, monitores y accesorios), así como servicios
                 digitales. El proceso de compra se gestiona mediante <strong>solicitudes de cotización</strong>:
               </p>
               <List items={[

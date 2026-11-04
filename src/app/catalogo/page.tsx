@@ -6,7 +6,7 @@ import type { Product } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Catálogo de Equipos",
-  description: "Explora nuestro catálogo de laptops, PCs, impresoras y accesorios de segunda mano revisados con garantía en Ecuador.",
+  description: "Explora nuestro catálogo de laptops, PCs, impresoras, monitores y accesorios nuevos con garantía en Ecuador.",
   alternates: {
     canonical: "https://bytexstore.es/catalogo",
   },

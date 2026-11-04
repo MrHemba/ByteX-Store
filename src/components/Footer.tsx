@@ -29,7 +29,7 @@ export default function Footer() {
               </div>
             </Link>
             <p className="footer-desc">
-              Laptops, PCs e impresoras de segunda mano revisados por expertos. Una tienda de H&G Solutions.
+              Laptops, PCs, impresoras y accesorios con garantía. Una tienda de H&G Solutions.
             </p>
             <a
               href={`https://wa.me/${wNum}`}
