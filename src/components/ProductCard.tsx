@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import Image from "@/components/ProductImage";
 import Link from "next/link";
 import { ShoppingCart, Check } from "lucide-react";
 import { useState } from "react";
@@ -227,6 +227,7 @@ export default function ProductCard({ product }: { product: Product }) {
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
+          overflow-wrap: anywhere;   /* nombres con listas de modelos sin espacios (L3110/L3250/...) */
           margin: 0;
           min-height: calc(2 * 1.35em); /* reserva 2 líneas: alinea precio y botón entre tarjetas */
         }

@@ -2,9 +2,9 @@
 export const revalidate = 60;
 
 import Link from "next/link";
-import Image from "next/image";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
+import HeroShowcase, { type HeroItem } from "@/components/HeroShowcase";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { getProducts } from "@/lib/supabase";
 import { CATEGORIES, matchesCategory } from "@/lib/categories";
@@ -44,12 +44,25 @@ function pickFeatured(products: Product[], count: number): Product[] {
   return picked;
 }
 
+function shuffle<T>(a: T[]): T[] {
+  const r = a.slice();
+  for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; }
+  return r;
+}
+
+const toHero = (p: Product): HeroItem => ({
+  id: p.id, nombre: p.nombre, precio: p.precio, foto: p.fotos_tienda[0], baja_pct: p.baja_pct ?? null,
+});
+
 const money = (n: number) => `$${n.toLocaleString("es-EC", { minimumFractionDigits: 2 })}`;
 
 export default async function Home() {
   let products: Product[] = [];
   try { products = await getProducts(); } catch {}
   const heroPicks = pickHero(products);
+  // Reserva para rotar en la portada: muestra al azar de TODO el catálogo con foto y stock (sin servicios),
+  // alternando categorías. La página se regenera cada minuto, así que la muestra se renueva sola.
+  const heroPool  = pickFeatured(shuffle(products), 200).filter(p => hasPhoto(p) && !p.es_servicio).map(toHero);
   const display   = pickFeatured(products, 8);
   const catCounts = CATEGORIES.map(c => products.filter(p => matchesCategory(p.categoria, c.id)).length);
 
@@ -79,23 +92,7 @@ export default async function Home() {
               </div>
             </div>
 
-            {heroPicks.length > 0 && (
-              <div className="hero-tiles">
-                {heroPicks.map((p, i) => (
-                  <Link key={p.id} href={`/catalogo/${p.id}`} className="hero-tile" style={{ animationDelay: `${120 + i * 70}ms` }}>
-                    <div className="hero-tile-img">
-                      <Image src={p.fotos_tienda[0]} alt={p.nombre} fill
-                        sizes="(max-width: 900px) 45vw, 260px" style={{ objectFit: "contain" }}
-                        priority={i < 2} />
-                    </div>
-                    <div className="hero-tile-meta">
-                      <span className="hero-tile-name">{p.nombre}</span>
-                      {p.precio > 0 && <span className="hero-tile-price">{money(p.precio)}</span>}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
+            {heroPicks.length > 0 && <HeroShowcase initial={heroPicks.map(toHero)} pool={heroPool} />}
           </div>
         </section>
 

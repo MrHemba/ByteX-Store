@@ -529,9 +529,10 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
         /* Grid */
         .cat-grid {
           display: grid;
-          grid-template-columns: repeat(5, 1fr);
+          grid-template-columns: repeat(5, minmax(0, 1fr));
           gap: 10px;
         }
+        .cat-grid > * { min-width: 0; }
         .cat-list {
           display: flex;
           flex-direction: column;
@@ -570,11 +571,11 @@ export default function CatalogoClient({ allProducts, initialCat = "todos", init
           font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
         }
         @media (max-width: 1400px) {
-          .cat-grid { grid-template-columns: repeat(4, 1fr); }
+          .cat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
         }
         @media (max-width: 1100px) {
           .cat-sidebar { width: 190px; }
-          .cat-grid { grid-template-columns: repeat(3, 1fr); }
+          .cat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         }
         @media (max-width: 768px) {
           .cat-topbar { position: static; }

@@ -315,6 +315,16 @@ export default function Navbar() {
           background: rgba(255,255,255,0.08);
         }
 
+        @media (max-width: 1180px) {
+          .navbar-inner { gap: 16px; padding: 0 16px; }
+          .navbar-logo-box { width: 250px; height: 75px; }
+          .navbar-search-input { width: 130px; }
+        }
+        @media (max-width: 960px) {
+          .navbar-logo-box { width: 200px; height: 60px; }
+          .navbar-search-input { width: 90px; }
+          .navbar-link { padding: 5px 8px; }
+        }
         @media (max-width: 768px) {
           .navbar { height: auto; min-height: 64px; }
           .navbar-inner { height: 64px; padding: 0 16px; gap: 12px; }
