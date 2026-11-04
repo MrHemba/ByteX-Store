@@ -10,6 +10,9 @@ export interface Product {
   stock: number;
   codigo: string | null;
   es_servicio: boolean;
+  /** Precio previo a la última baja y % de baja vigente (solo productos del ERP). null = sin baja. */
+  precio_anterior?: number | null;
+  baja_pct?: number | null;
 }
 
 export interface CartItem {

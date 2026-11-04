@@ -18,7 +18,7 @@ const TRUST = [
   { icon: MessageCircle, label: "Soporte post-venta" },
 ];
 
-const HERO_CATS = ["laptop", "pc", "impresora", "monitor", "Zona Tech"];
+const HERO_CATS = ["laptop", "pc", "impresora", "monitor", "componentes"];
 
 const hasPhoto = (p: Product) => p.fotos_tienda.length > 0 && (p.es_servicio || p.stock > 0);
 
@@ -66,7 +66,7 @@ export default async function Home() {
             <div className="hero-copy">
               <h1 className="hero-h1">Tecnología revisada e importada directo para ti.</h1>
               <p className="hero-sub">
-                Laptops, PCs e impresoras de segunda mano con garantía — y productos nuevos importados en nuestra <strong>Zona Tech</strong>.
+                Laptops, PCs e impresoras de segunda mano con garantía — y componentes y accesorios nuevos para tu equipo.
               </p>
               <div className="hero-ctas">
                 <Link href="/catalogo" className="btn-primary hero-cta-primary">

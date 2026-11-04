@@ -6,6 +6,7 @@ import { ShoppingCart, Check } from "lucide-react";
 import { useState } from "react";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart-store";
+import { DropBadge, OldPrice } from "@/components/PriceDrop";
 
 const CONDITIONS: Record<string, { label: string; cls: string }> = {
   nuevo:           { label: "Nuevo",           cls: "badge badge-nuevo" },
@@ -21,7 +22,6 @@ export default function ProductRow({ product }: { product: Product }) {
   const cond = CONDITIONS[product.condicion] ?? CONDITIONS.segunda;
   const imgSrc = product.fotos_tienda?.[0] || PLACEHOLDER;
   const available  = product.es_servicio || product.stock > 0;
-  const dropiStock = product.stock === 99; // centinela Dropi — sin cantidad real
   const specs = Object.entries(product.especificaciones || {}).slice(0, 4);
 
   function handleAdd(e: React.MouseEvent) {
@@ -77,15 +77,23 @@ export default function ProductRow({ product }: { product: Product }) {
         {/* Price + CTA */}
         <div className="row-actions">
           <div className="row-price-area">
-            {!product.es_servicio && available && product.stock <= 2 && !dropiStock && (
+            {!product.es_servicio && available && product.stock <= 2 && (
               <span style={{ fontSize: 11, color: "var(--warning)", fontWeight: 600 }}>
                 {product.stock === 1 ? "Último disponible" : `Últimos ${product.stock}`}
               </span>
             )}
             {product.precio > 0 ? (
-              <span className="price-tag" style={{ fontSize: 22 }}>
-                ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
-              </span>
+              <>
+                {product.baja_pct && available && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <DropBadge pct={product.baja_pct} />
+                    <OldPrice value={product.precio_anterior} pct={product.baja_pct} />
+                  </span>
+                )}
+                <span className="price-tag" style={{ fontSize: 22 }}>
+                  ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
+                </span>
+              </>
             ) : (
               <span style={{ fontSize: 13, color: "var(--text-2)" }}>Precio a consultar</span>
             )}

@@ -19,7 +19,7 @@ function sortSpecs(obj: Record<string, string>): Record<string, string> {
   return Object.fromEntries(Object.entries(obj).sort(([a], [b]) => rank(a) - rank(b)));
 }
 
-/** Valores como texto: Dropi guarda las opciones de Shopify como arrays (["S","M","L"]) */
+/** Valores como texto: acepta también arrays y objetos */
 function specValue(v: unknown): string {
   if (Array.isArray(v)) return v.map(String).join(', ');
   if (v === null || v === undefined) return '';
@@ -39,17 +39,29 @@ function parseEspecificaciones(raw: unknown): Record<string, string> {
   return sortSpecs(Object.fromEntries(entries));
 }
 
-/** Dropi gestiona el stock real; este valor centinela = "disponible" sin alertas de "último" */
-export const DROPI_STOCK = 99;
-
 // ── Mapeo de cada fuente al tipo Product ──────────────────────────────────────
 
 const PRODUCTO_COLS = `id, nombre, descripcion_publica, precio_unitario, fotos_tienda, condicion,
-  especificaciones, categoria, codigo_principal, stock, es_servicio`;
+  especificaciones, categoria, codigo_principal, stock, es_servicio,
+  precio_anterior, precio_anterior_fecha`;
+
+/** Una baja se muestra solo si es de al menos este % y tiene menos de BAJA_VIGENCIA_DIAS días. */
+const BAJA_MIN_PCT = 3;
+const BAJA_VIGENCIA_DIAS = 30;
+
+function calcularBaja(precio: number, anterior: number | null, fecha: string | null): number | null {
+  if (!anterior || !fecha || !(precio > 0) || anterior <= precio) return null;
+  const dias = (Date.now() - new Date(fecha).getTime()) / 86_400_000;
+  if (dias > BAJA_VIGENCIA_DIAS) return null;
+  const pct = Math.round(((anterior - precio) / anterior) * 100);
+  return pct >= BAJA_MIN_PCT ? pct : null;
+}
 const EQUIPO_COLS   = `id, tipo, marca, modelo, descripcion_publica, precio_tienda, fotos_tienda, condicion, categoria`;
-const DROPI_COLS    = `id, nombre, descripcion_publica, precio, fotos_tienda, condicion, especificaciones, categoria, codigo, disponible`;
 
 function mapProducto(p: any): Product {
+  const precio = Number(p.precio_unitario ?? 0);
+  const anterior = p.precio_anterior != null ? Number(p.precio_anterior) : null;
+  const baja = calcularBaja(precio, anterior, p.precio_anterior_fecha ?? null);
   return {
     id:                  String(p.id),
     nombre:              p.nombre,
@@ -62,6 +74,8 @@ function mapProducto(p: any): Product {
     codigo:              p.codigo_principal,
     stock:               p.stock                     ?? 0,
     es_servicio:         p.es_servicio               ?? false,
+    precio_anterior:     baja ? anterior : null,
+    baja_pct:            baja,
   };
 }
 
@@ -81,56 +95,25 @@ function mapEquipo(e: any): Product {
   };
 }
 
-function mapDropi(d: any): Product {
-  return {
-    id:                  d.id,                           // ya tiene formato dropi_X
-    nombre:              d.nombre,
-    descripcion_publica: d.descripcion_publica,
-    precio:              d.precio               ?? 0,
-    fotos_tienda:        d.fotos_tienda         || [],
-    condicion:           (d.condicion === 'nueva' ? 'nuevo' : d.condicion) || 'nuevo',
-    especificaciones:    parseEspecificaciones(d.especificaciones),
-    categoria:           d.categoria            || '',
-    codigo:              d.codigo               ?? null,
-    stock:               d.disponible ? DROPI_STOCK : 0,
-    es_servicio:         false,
-  };
-}
-
 export async function getProducts(): Promise<Product[]> {
-  const [{ data: prods, error: e1 }, { data: equips, error: e2 }, { data: dropi, error: e3 }] = await Promise.all([
+  const [{ data: prods, error: e1 }, { data: equips, error: e2 }] = await Promise.all([
     supabase.from('productos').select(PRODUCTO_COLS)
       .eq('visible_tienda', true).eq('active', true)
       .order('created_at', { ascending: false }),
     supabase.from('equipos_compraventa').select(EQUIPO_COLS)
       .eq('visible_tienda', true).neq('estado', 'vendido'),
-    // disponible = false → el producto ya no existe en Shopify
-    supabase.from('productos_dropi').select(DROPI_COLS)
-      .eq('visible_tienda', true).eq('disponible', true),
   ]);
 
   if (e1) console.error('[ByteX] Error productos:', e1.message);
   if (e2) console.error('[ByteX] Error equipos:', e2.message);
-  if (e3) console.error('[ByteX] Error productos_dropi:', e3.message);
 
   return [
     ...(prods  || []).map(mapProducto),
     ...(equips || []).map(mapEquipo),
-    ...(dropi  || []).map(mapDropi),
   ];
 }
 
 export async function getProductBySlug(id: string): Promise<Product | null> {
-  // Productos Dropi tienen ID con prefijo "dropi_"
-  if (id.startsWith('dropi_')) {
-    const { data, error } = await supabase
-      .from('productos_dropi').select(DROPI_COLS)
-      .eq('id', id).eq('visible_tienda', true).eq('disponible', true)
-      .maybeSingle();
-    if (error) throw new Error(`[ByteX] Error cargando producto dropi: ${error.message}`);
-    return data ? mapDropi(data) : null;
-  }
-
   // Equipos compraventa tienen ID con prefijo "eq_"
   if (id.startsWith('eq_')) {
     const equipoId = Number(id.slice(3));
@@ -207,7 +190,7 @@ export async function createCotizacion(payload: {
 
   const detalles = payload.items.map((item) => ({
     cotizacion_id:   cotizacionId,
-    // Los equipos (eq_N) y productos Dropi (dropi_N) no tienen FK en producto_id
+    // Los equipos (eq_N) no tienen FK en producto_id
     producto_id:     /^\d+$/.test(item.producto_id) ? Number(item.producto_id) : null,
     nombre_producto: item.nombre_producto,
     codigo_producto: item.codigo_producto,

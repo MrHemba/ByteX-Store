@@ -1,4 +1,4 @@
-import { Laptop, Monitor, Printer, Cpu, Package, Wrench, type LucideIcon } from 'lucide-react';
+import { Laptop, Monitor, Printer, Cpu, HardDrive, Armchair, Mouse, Droplet, Wrench, type LucideIcon } from 'lucide-react';
 
 /**
  * Categorías de la tienda. `id` es lo que va en ?cat= y se compara con
@@ -9,7 +9,10 @@ export const CATEGORIES: { id: string; label: string; desc: string; icon: Lucide
   { id: 'pc',        label: 'PCs Escritorio', desc: 'Equipos de escritorio',       icon: Cpu },
   { id: 'impresora', label: 'Impresoras',     desc: 'Láser, tinta y multifunción', icon: Printer },
   { id: 'monitor',   label: 'Monitores',      desc: 'Full HD e IPS de calidad',    icon: Monitor },
-  { id: 'Zona Tech', label: 'Zona Tech',      desc: 'Importados y novedades',      icon: Package },
+  { id: 'componentes', label: 'Componentes',  desc: 'Procesadores, RAM, discos y más', icon: HardDrive },
+  { id: 'silla',     label: 'Sillas',         desc: 'Oficina y gamer',             icon: Armchair },
+  { id: 'accesorio', label: 'Accesorios',     desc: 'Mouse, teclados, UPS y cables', icon: Mouse },
+  { id: 'tinta',     label: 'Tintas',         desc: 'Para impresoras de tinta continua', icon: Droplet },
   { id: 'servicio',  label: 'Servicios',      desc: 'Software y soporte técnico',  icon: Wrench },
 ];
 

@@ -7,14 +7,16 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**.supabase.co",
       },
-      // Shopify CDN — imágenes de productos Dropi
+      // Fotos de productos tomadas de los catálogos web de los proveedores (IDC y CEMCO)
       {
         protocol: "https",
-        hostname: "cdn.shopify.com",
+        hostname: "www.idcmayoristas.com",
+        pathname: "/wp-content/uploads/**",
       },
       {
         protocol: "https",
-        hostname: "**.myshopify.com",
+        hostname: "cemco.com.ec",
+        pathname: "/wp-content/uploads/**",
       },
     ],
   },

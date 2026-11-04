@@ -11,6 +11,7 @@ import {
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart-store";
+import { DropBadge, OldPrice } from "@/components/PriceDrop";
 
 const CONDITION_MAP: Record<string, { label: string; cls: string; dot: string }> = {
   nuevo:           { label: "Nuevo",           cls: "badge badge-nuevo",           dot: "#12B76A" },
@@ -38,7 +39,6 @@ export default function ProductDetailClient({ product }: { product: Product }) {
   const images    = product.fotos_tienda?.length > 0 ? product.fotos_tienda : [PLACEHOLDER];
   const condition = CONDITION_MAP[product.condicion] ?? CONDITION_MAP.segunda;
   const isAvail    = product.es_servicio || product.stock > 0;
-  const dropiStock = product.stock === 99; // centinela — Dropi no reporta cantidad real
   const specs     = Object.entries(product.especificaciones || {});
 
   const handleAdd = () => {
@@ -183,9 +183,17 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             <div className="pd-price-col">
               <span className="pd-price-label">Precio</span>
               {product.precio > 0 ? (
-                <span className="price-tag pd-price-val">
-                  ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
-                </span>
+                <>
+                  {product.baja_pct && (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <DropBadge pct={product.baja_pct} style={{ fontSize: 13, padding: "4px 9px" }} />
+                      <OldPrice value={product.precio_anterior} pct={product.baja_pct} style={{ fontSize: 15 }} />
+                    </span>
+                  )}
+                  <span className="price-tag pd-price-val">
+                    ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
+                  </span>
+                </>
               ) : (
                 <span className="pd-price-consult">Consultar</span>
               )}
@@ -199,11 +207,9 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   <span className="pd-stock-dot on" />
                   {product.es_servicio
                     ? "Disponible"
-                    : dropiStock
-                      ? "Disponible"
-                      : product.stock <= 3
-                        ? `¡Solo ${product.stock} unidad${product.stock > 1 ? "es" : ""}!`
-                        : "En stock"}
+                    : product.stock <= 3
+                      ? `¡Solo ${product.stock} unidad${product.stock > 1 ? "es" : ""}!`
+                      : "En stock"}
                 </div>
               ) : (
                 <div className="pd-stock-avail">

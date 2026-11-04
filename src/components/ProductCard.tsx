@@ -5,6 +5,7 @@ import { ShoppingCart, Check } from "lucide-react";
 import { useState } from "react";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart-store";
+import { DropBadge, OldPrice } from "@/components/PriceDrop";
 
 const CONDITIONS: Record<string, { label: string; color: string; bg: string; border: string }> = {
   nuevo:           { label: "Nuevo",           color: "#16A34A", bg: "rgba(22,163,74,0.10)",  border: "rgba(22,163,74,0.25)" },
@@ -21,7 +22,6 @@ export default function ProductCard({ product }: { product: Product }) {
   const imgSrc = product.fotos_tienda?.[0] || PLACEHOLDER;
   const available = product.es_servicio || product.stock > 0;
   const lowStock   = !product.es_servicio && available && product.stock <= 2 && product.stock !== 99;
-  const dropiStock = product.stock === 99; // centinela Dropi — no hay cantidad real
 
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault();
@@ -46,6 +46,10 @@ export default function ProductCard({ product }: { product: Product }) {
             unoptimized={imgSrc.startsWith("data:")}
           />
 
+          {product.baja_pct && available && (
+            <DropBadge pct={product.baja_pct} style={{ position: "absolute", top: 8, left: 8, zIndex: 2, fontSize: 12, padding: "4px 8px" }} />
+          )}
+
           {/* Agotado overlay */}
           {!available && (
             <div className="pc-sold-overlay">
@@ -63,7 +67,7 @@ export default function ProductCard({ product }: { product: Product }) {
             <span className="pc-cat">{product.categoria || "Equipo"}</span>
             {!product.es_servicio && (
               <span className={`pc-stock${!available ? " out" : lowStock ? " low" : ""}`}>
-                {!available ? "Agotado" : lowStock ? (product.stock === 1 ? "Último" : `Últimos ${product.stock}`) : dropiStock ? "Disponible" : `${product.stock} disponibles`}
+                {!available ? "Agotado" : lowStock ? (product.stock === 1 ? "Último" : `Últimos ${product.stock}`) : `${product.stock} disponibles`}
               </span>
             )}
           </div>
@@ -79,9 +83,12 @@ export default function ProductCard({ product }: { product: Product }) {
           {/* Row 4: price */}
           <div className="pc-price-row">
             {product.precio > 0 ? (
-              <span className="pc-price">
-                ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
-              </span>
+              <>
+                <span className="pc-price">
+                  ${product.precio.toLocaleString("es-EC", { minimumFractionDigits: 2 })}
+                </span>
+                <OldPrice value={product.precio_anterior} pct={product.baja_pct} />
+              </>
             ) : (
               <span className="pc-consult">Precio a consultar</span>
             )}

@@ -27,7 +27,6 @@ src/
     types.ts                      # Product, CartItem
     cart-store.ts                 # Zustand (persistido en localStorage) + maxQuantity
     migrations/                   # SQL para ejecutar en Supabase
-  app/api/shopify/sync/route.ts   # Sync Shopify → productos_dropi (lo llama el ERP)
 public/
   logo.png                        # Logo principal (PNG transparente) — favicon
   logo-principal.jpg              # Para OG/Twitter cards
@@ -48,14 +47,24 @@ public/
 | `especificaciones`  | `especificaciones`    |
 | `stock`             | `stock`               |
 
-## Fuentes de productos (tres tablas)
+## Fuentes de productos (dos tablas)
 
 1. `productos` donde `visible_tienda = true AND active = true` → IDs normales (ej: `"123"`)
 2. `equipos_compraventa` donde `visible_tienda = true AND estado != 'vendido'` → IDs con prefijo `eq_` (ej: `"eq_45"`)
-3. `productos_dropi` donde `visible_tienda = true AND disponible = true` → IDs con prefijo `dropi_`
 
-Todas mapeadas al tipo `Product`. Los equipos siempre tienen `es_servicio: false` y `stock: 1`.
-Dropi usa `stock: 99` (`DROPI_STOCK`) como centinela de "disponible": Shopify no da cantidades reales.
+Ambas mapeadas al tipo `Product`. Los equipos siempre tienen `es_servicio: false` y `stock: 1`.
+La integración con Dropi/Shopify se eliminó (tablas, sync y categoría "Zona Tech").
+
+## Baja de precio ("−X%")
+
+- `productos.precio_anterior` / `precio_anterior_fecha` los mantiene un trigger en la base (`migration_precio_anterior.sql` del ERP).
+- `mapProducto` calcula `baja_pct` solo si la baja es ≥ `BAJA_MIN_PCT` (3%) y tiene ≤ `BAJA_VIGENCIA_DIAS` (30) días; la UI muestra
+  la insignia roja y el precio tachado (`components/PriceDrop.tsx`).
+
+## Categorías
+
+`lib/categories.ts` (pills). Se comparan con `productos.categoria` por substring sin mayúsculas: Laptop, PC, Impresora, Monitor,
+Componentes, Silla, Accesorio, Tinta, Servicio.
 
 ## Carrito
 
@@ -67,10 +76,10 @@ Dropi usa `stock: 99` (`DROPI_STOCK`) como centinela de "disponible": Shopify no
 
 - La anon key es pública. `cotizaciones_web` / `_detalle`: la tienda solo INSERTA (sin SELECT);
   por eso el UUID de la cotización se genera en el cliente con `crypto.randomUUID()`.
-- `productos_dropi`: lectura pública de lo visible; la escritura solo vía la función
-  `sync_productos_dropi(secret, items)` (SECURITY DEFINER, valida el SHA-256 de `SHOPIFY_SYNC_SECRET`
-  guardado en `private.app_config`). Si cambia el secreto en Vercel, actualizar ese hash.
-- El sync no sobrescribe `visible_tienda`, `categoria` ni `condicion` (los administra el ERP).
+- `productos` y `equipos_compraventa`: la política RLS filtra filas, no columnas. El acceso de `anon`/`authenticated` es
+  **SELECT por columna** (costos, proveedor y notas internas NO son legibles). Si la tienda necesita una columna nueva hay que
+  otorgarla: `GRANT SELECT (col) ON public.productos TO anon, authenticated;` y `select *` ya no funciona
+  (ver `migration_seguridad_columnas_publicas.sql` del ERP).
 
 ## Servicios (`es_servicio = true`)
 
@@ -89,7 +98,7 @@ Dropi usa `stock: 99` (`DROPI_STOCK`) como centinela de "disponible": Shopify no
 3. Al confirmar: `createCotizacion()` en `supabase.ts` → INSERT en `cotizaciones_web` + `cotizaciones_web_detalle`.
    Solo si se guardó se abre WhatsApp y se vacía el carrito; si falla se muestra el error.
 4. Trigger automático en Supabase crea notificación en ERP
-5. Equipos compraventa y Dropi: `producto_id = null` en detalle (solo guardan `nombre_producto`)
+5. Equipos compraventa: `producto_id = null` en detalle (solo guardan `nombre_producto`)
 
 ## Tabla `cotizaciones_web`
 
