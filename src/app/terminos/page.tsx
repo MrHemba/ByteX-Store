@@ -88,18 +88,19 @@ export default function TerminosPage() {
 
             <Section title="5. Garantía">
               <List items={[
-                "Los equipos reacondicionados incluyen garantía de funcionamiento según lo indicado en cada producto al momento de la venta.",
-                "La garantía cubre defectos de funcionamiento, no daños causados por mal uso, golpes o líquidos.",
-                "Para hacer efectiva la garantía, el cliente debe comunicarse con H&G Solutions a través de WhatsApp con el número de cotización.",
-                "Los equipos de segunda mano pueden o no incluir garantía; esto se especifica en la cotización confirmada.",
+                "Los equipos nuevos incluyen garantía de 1 año contra defectos de funcionamiento, contada desde la fecha de entrega.",
+                "Los equipos de segunda mano se venden sin garantía; esto se indica en la ficha del producto y en la cotización confirmada.",
+                "Los equipos reacondicionados incluyen la garantía indicada en cada producto al momento de la venta.",
+                "La garantía cubre defectos de funcionamiento, no daños causados por mal uso, golpes, líquidos o manipulación por terceros.",
+                "Para hacer efectiva la garantía, el cliente debe comunicarse con H&G Solutions a través de WhatsApp con el número de cotización o la factura.",
               ]} />
             </Section>
 
             <Section title="6. Envíos y entrega">
               <List items={[
-                "Realizamos envíos a nivel nacional dentro del Ecuador.",
-                "Los costos y tiempos de envío se coordinan y acuerdan durante la atención por WhatsApp.",
-                "ByteX Store no se responsabiliza por demoras causadas por empresas de transporte o factores externos.",
+                "Realizamos envíos a todo el Ecuador por Servientrega o por la paquetería que el cliente elija.",
+                "El costo y el tiempo de entrega dependen de la paquetería y el destino, y se acuerdan durante la atención por WhatsApp antes de confirmar la compra.",
+                "ByteX Store no se responsabiliza por demoras causadas por las empresas de transporte o factores externos.",
                 "El cliente debe verificar el estado del equipo al momento de la recepción y reportar cualquier inconveniente dentro de las 24 horas siguientes.",
               ]} />
             </Section>
