@@ -158,6 +158,25 @@ gtag('js', new Date());
 gtag('config', 'G-QRRGT5D3VT');`,
           }}
         />
+        {/* Conversión Google Ads: evento whatsapp_click en cualquier enlace o apertura de WhatsApp */}
+        <Script
+          id="wa-click-tracking"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+  var isWa=function(u){return typeof u==='string'&&/(wa\\.me|api\\.whatsapp\\.com|web\\.whatsapp\\.com)/i.test(u);};
+  var track=function(origen){
+    try{gtag('event','whatsapp_click',{origen:origen,pagina:location.pathname,transport_type:'beacon'});}catch(e){}
+  };
+  document.addEventListener('click',function(e){
+    var a=e.target&&e.target.closest?e.target.closest('a[href]'):null;
+    if(a&&isWa(a.href)){track(a.getAttribute('aria-label')||(a.textContent||'').trim().slice(0,40)||'enlace');}
+  },true);
+  var openOrig=window.open;
+  window.open=function(u){if(isWa(String(u)))track('cotizacion');return openOrig.apply(window,arguments);};
+})();`,
+          }}
+        />
       </head>
       <body>
         {/* Google Tag Manager — noscript fallback en <body> */}
