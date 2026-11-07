@@ -378,7 +378,7 @@ export default async function Home() {
         }
         .cat-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(5, minmax(0, 1fr));  /* 10 categorías: 5x2 en escritorio, 2x5 en pantallas medianas y móvil */
           gap: 12px;
         }
         .cat-card {
@@ -487,6 +487,7 @@ export default async function Home() {
 
         /* ── RESPONSIVE ── */
         @media (max-width: 1100px) {
+          .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .products-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         }
         @media (max-width: 900px) {
