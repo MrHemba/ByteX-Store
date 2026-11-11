@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { MessageCircle, MapPin } from "lucide-react";
 import { CATEGORIES } from "@/lib/categories";
+import { INSTAGRAM_URL, FACEBOOK_URL } from "@/lib/social";
+
 
 export default function Footer() {
   const wNum = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
@@ -40,6 +42,22 @@ export default function Footer() {
               <MessageCircle size={15} />
               WhatsApp
             </a>
+            <div className="footer-social">
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer"
+                 className="footer-social-btn" aria-label="Instagram de ByteX Store">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+                </svg>
+              </a>
+              <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer"
+                 className="footer-social-btn" aria-label="Facebook de ByteX Store">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M13.5 21v-8h2.7l.4-3.2h-3.1V7.8c0-.9.3-1.5 1.6-1.5h1.7V3.4c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.5-4 4.1v2.4H7.7V13h2.7v8h3.1z" />
+                </svg>
+              </a>
+            </div>
           </div>
 
           {/* Col 2 — Catálogo */}
@@ -173,6 +191,23 @@ export default function Footer() {
           transition: background 0.15s;
         }
         .footer-wa-btn:hover { background: rgba(37,211,102,0.18); }
+        .footer-social { display: flex; gap: 10px; margin-top: 16px; }
+        .footer-social-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border-radius: 6px;
+          border: 1px solid rgba(255,255,255,0.14);
+          color: rgba(255,255,255,0.75);
+          transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out), background 160ms var(--ease-out);
+        }
+        .footer-social-btn:hover {
+          color: var(--accent);
+          border-color: var(--accent);
+          background: rgba(255,255,255,0.04);
+        }
         .footer-bottom {
           padding-top: 20px;
           border-top: 1px solid rgba(255,255,255,0.08);
